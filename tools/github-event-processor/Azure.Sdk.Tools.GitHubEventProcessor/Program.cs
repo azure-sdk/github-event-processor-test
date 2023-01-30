@@ -39,7 +39,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             await gitHubEventClient.WriteRateLimits("RateLimit at start of execution:");
             switch (eventName)
             {
-                case EventConstants.issue:
+                case EventConstants.issues:
                     {
                         IssueEventGitHubPayload issueEventPayload = serializer.Deserialize<IssueEventGitHubPayload>(rawJson);
                         await IssueProcessing.ProcessIssueEvent(gitHubEventClient, issueEventPayload);
@@ -83,6 +83,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
                     }
                 default:
                     {
+                        Console.WriteLine($"Event type {eventName} does not have any processing associated with it.");
                         break;
                     }
             }

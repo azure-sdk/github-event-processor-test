@@ -49,11 +49,11 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 var issueUpdate = mockGitHubEventClient.GetIssueUpdate();
                 Assert.IsNotNull(issueUpdate, $"{rule} is {ruleState} and should have produced an IssueUpdate with {LabelConstants.NoRecentActivity} removed.");
                 // Verify that NeedsAuthorFeedback was removed
-                Assert.False(issueUpdate.Labels.Contains(LabelConstants.NoRecentActivity), $"IssueUpdate contains {LabelConstants.NoRecentActivity} label which should have been removed");
+                Assert.False(issueUpdate.Labels.Contains(LabelConstants.NoRecentActivity), $"IssueUpdate contains {LabelConstants.NoRecentActivity} label which should have been removed.");
             }
             else
             {
-                Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should have produced any updates.");
+                Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
                 Assert.IsNull(mockGitHubEventClient.GetIssueUpdate(), $"{rule} is {ruleState} and should not have produced an IssueUpdate.");
             }
             return;

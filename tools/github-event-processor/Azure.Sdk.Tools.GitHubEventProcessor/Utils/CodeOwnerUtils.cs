@@ -34,6 +34,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
         {
             if (_codeOwnerEntries == null)
             {
+                string codeOwnersFilePath = GetCodeOwnersFilePath();
+                Console.WriteLine($"Loading codeowners file, {codeOwnersFilePath}");
                 _codeOwnerEntries = CodeOwnersFile.ParseFile(GetCodeOwnersFilePath());
             }
             return _codeOwnerEntries;

@@ -142,10 +142,11 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                         // isn't the only label on the issue.
                         if (issueEventPayload.Issue.Labels.Count > 1)
                         {
+                            Console.WriteLine($"JRS-Remove CodeOwnerUtils.codeOwnersFilePathOverride={CodeOwnerUtils.codeOwnersFilePathOverride}");
                             string partiesToMention = CodeOwnerUtils.GetPartiesToMentionForServiceAttention(issueEventPayload.Issue.Labels);
                             if (null != partiesToMention)
                             {
-                                string issueComment = $"Thanks for the feedback! We are routing this to the appropriate team for follow-up. cc ${partiesToMention}.";
+                                string issueComment = $"Thanks for the feedback! We are routing this to the appropriate team for follow-up. cc {partiesToMention}.";
                                 gitHubEventClient.CreateComment(issueEventPayload.Repository.Id, issueEventPayload.Issue.Number, issueComment);
                             }
                             else
@@ -223,7 +224,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
 
         /// <summary>
         /// Reset Issue Activity https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#reset-issue-activity
-        /// For Issues, the trigger is Edited or Reopened
+        /// For issue, the trigger is Edited or Reopened
         /// See Common_ResetIssueActivity comments
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated gitHubEventClient</param>
@@ -307,7 +308,9 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// Conditions: Issue is open
         ///             Label added is "needs-author-feedback"
         /// Resulting Action: 
-        ///             Add "needs-team-attention" label
+        ///             Remove "needs-triage" label
+        ///             Remove "needs-team-triage" label
+        //              Remove "needs-team-attention" label
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated gitHubEventClient</param>
         /// <param name="issueEventPayload">Issue event payload</param>
@@ -333,7 +336,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                 }
             }
         }
-        // 
+
         /// <summary>
         /// Issue Addressed https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#issue-addressed
         /// Trigger: issue labeled

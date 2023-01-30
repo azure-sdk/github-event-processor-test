@@ -67,6 +67,15 @@
         "color": "ededed",
         "default": false,
         "description": null,
+        "id": 4976488245,
+        "name": "customer-reported",
+        "node_id": "LA_kwDOHkcrQs8AAAABKJ8vNQ",
+        "url": "https://api.github.com/repos/Azure/azure-sdk-fake/labels/customer-reported"
+      },
+      {
+        "color": "ededed",
+        "default": false,
+        "description": null,
         "id": 4704569627,
         "name": "needs-triage",
         "node_id": "LA_kwDOHkcrQs8AAAABGGoJGw",

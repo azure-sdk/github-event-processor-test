@@ -1,5 +1,5 @@
 {
-  "action": "unlabeled",
+  "action": "labeled",
   "issue": {
     "active_lock_reason": null,
     "assignee": {
@@ -64,22 +64,22 @@
         "url": "https://api.github.com/repos/Azure/azure-sdk-fake/labels/bug"
       },
       {
-        "color": "ededed",
+        "color": "F75BB2",
         "default": false,
-        "description": null,
-        "id": 4704569627,
-        "name": "needs-triage",
-        "node_id": "LA_kwDOHkcrQs8AAAABGGoJGw",
-        "url": "https://api.github.com/repos/Azure/azure-sdk-fake/labels/needs-triage"
+        "description": "",
+        "id": 5095715984,
+        "name": "Service Attention",
+        "node_id": "LA_kwDOHkcrQs8AAAABL7p0kA",
+        "url": "https://api.github.com/repos/Azure/azure-sdk-fake/labels/Service%20Attention"
       },
       {
-        "color": "ededed",
+        "color": "0679ED",
         "default": false,
-        "description": null,
-        "id": 4976488245,
-        "name": "customer-reported",
-        "node_id": "LA_kwDOHkcrQs8AAAABKJ8vNQ",
-        "url": "https://api.github.com/repos/Azure/azure-sdk-fake/labels/customer-reported"
+        "description": "",
+        "id": 5074290839,
+        "name": "issue-addressed",
+        "node_id": "LA_kwDOHkcrQs8AAAABLnOIlw",
+        "url": "https://api.github.com/repos/Azure/azure-sdk-fake/labels/issue-addressed"
       },
       {
         "color": "9C7082",
@@ -89,15 +89,6 @@
         "name": "FakeLabel1",
         "node_id": "LA_kwDOHkcrQs8AAAABL7pm5w",
         "url": "https://api.github.com/repos/Azure/azure-sdk-fake/labels/FakeLabel1"
-      },
-      {
-        "color": "DBC2DE",
-        "default": false,
-        "description": "",
-        "id": 5095805781,
-        "name": "needs-team-triage",
-        "node_id": "LA_kwDOHkcrQs8AAAABL7vTVQ",
-        "url": "https://api.github.com/repos/Azure/azure-sdk-fake/labels/needs-team-triage"
       }
     ],
     "labels_url": "https://api.github.com/repos/Azure/azure-sdk-fake/issues/14/labels{/name}",
@@ -122,8 +113,8 @@
     "state": "open",
     "state_reason": null,
     "timeline_url": "https://api.github.com/repos/Azure/azure-sdk-fake/issues/14/timeline",
-    "title": "New test issue to generate event payloads",
-    "updated_at": "2023-01-30T16:39:43Z",
+    "title": "New issue to generate event payloads for static tests",
+    "updated_at": "2023-01-30T18:20:53Z",
     "url": "https://api.github.com/repos/Azure/azure-sdk-fake/issues/14",
     "user": {
       "avatar_url": "https://avatars.githubusercontent.com/u/13556087?v=4",
@@ -147,13 +138,13 @@
     }
   },
   "label": {
-    "color": "FDEB99",
+    "color": "F75BB2",
     "default": false,
     "description": "",
-    "id": 5095753141,
-    "name": "CXP Attention",
-    "node_id": "LA_kwDOHkcrQs8AAAABL7sFtQ",
-    "url": "https://api.github.com/repos/Azure/azure-sdk-fake/labels/CXP%20Attention"
+    "id": 5095715984,
+    "name": "Service Attention",
+    "node_id": "LA_kwDOHkcrQs8AAAABL7p0kA",
+    "url": "https://api.github.com/repos/Azure/azure-sdk-fake/labels/Service%20Attention"
   },
   "repository": {
     "allow_forking": true,

@@ -52,7 +52,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 // Verify that NeedsTeamAttention was added
                 Assert.True(issueUpdate.Labels.Contains(LabelConstants.NeedsTeamAttention), $"IssueUpdate does not contain {LabelConstants.NeedsTeamAttention} label whcih should have been added.");
                 // Verify that NeedsAuthorFeedback was removed
-                Assert.False(issueUpdate.Labels.Contains(LabelConstants.NeedsAuthorFeedback), $"IssueUpdate contains {LabelConstants.NeedsAuthorFeedback} label which should have been removed");
+                Assert.False(issueUpdate.Labels.Contains(LabelConstants.NeedsAuthorFeedback), $"IssueUpdate contains {LabelConstants.NeedsAuthorFeedback} label which should have been removed.");
             }
             else
             {
@@ -94,7 +94,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 var issueUpdate = mockGitHubEventClient.GetIssueUpdate();
                 Assert.IsNotNull(issueUpdate, $"IssueUpdate is null. {rule} is {ruleState} and should have produced an IssueUpdate with {LabelConstants.NoRecentActivity} removed.");
                 // Verify that NoRecentActivity was removed
-                Assert.False(issueUpdate.Labels.Contains(LabelConstants.NoRecentActivity), $"IssueUpdate contains {LabelConstants.NoRecentActivity} label which should have been removed");
+                Assert.False(issueUpdate.Labels.Contains(LabelConstants.NoRecentActivity), $"IssueUpdate contains {LabelConstants.NoRecentActivity} label which should have been removed.");
             }
             else
             {
@@ -141,8 +141,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 Assert.True(issueUpdate.Labels.Contains(LabelConstants.NeedsTeamAttention), $"IssueUpdate does not contain {LabelConstants.NeedsTeamAttention} label which should have been added.");
 
                 // Verify that NeedsAuthorFeedback and NoRecentActivity labels were removed
-                Assert.False(issueUpdate.Labels.Contains(LabelConstants.NeedsAuthorFeedback), $"IssueUpdate contains {LabelConstants.NeedsAuthorFeedback} label which should have been removed");
-                Assert.False(issueUpdate.Labels.Contains(LabelConstants.NoRecentActivity), $"IssueUpdate contains {LabelConstants.NoRecentActivity} label which should have been removed");
+                Assert.False(issueUpdate.Labels.Contains(LabelConstants.NeedsAuthorFeedback), $"IssueUpdate contains {LabelConstants.NeedsAuthorFeedback} label which should have been removed.");
+                Assert.False(issueUpdate.Labels.Contains(LabelConstants.NoRecentActivity), $"IssueUpdate contains {LabelConstants.NoRecentActivity} label which should have been removed.");
             }
             else
             {
@@ -239,7 +239,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 // State = ItemState.Open
                 Assert.AreEqual(issueUpdate.State, ItemState.Open, $"IssueUpdate's state should be ItemState.Open and was not.");
                 // IssueAddressed label has been removed
-                Assert.False(issueUpdate.Labels.Contains(LabelConstants.IssueAddressed), $"IssueUpdate contains {LabelConstants.IssueAddressed} label which should have been removed");
+                Assert.False(issueUpdate.Labels.Contains(LabelConstants.IssueAddressed), $"IssueUpdate contains {LabelConstants.IssueAddressed} label which should have been removed.");
                 // NeedsTeamAttention has been added
                 Assert.True(issueUpdate.Labels.Contains(LabelConstants.NeedsTeamAttention), $"IssueUpdate does not contain {LabelConstants.NeedsTeamAttention} label which should have been added.");
             }
@@ -288,7 +288,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 // State = ItemState.Open
                 Assert.AreEqual(issueUpdate.State, ItemState.Open, $"IssueUpdate's state should be ItemState.Open and was not.");
                 // IssueAddressed label has been removed
-                Assert.False(issueUpdate.Labels.Contains(LabelConstants.IssueAddressed), $"IssueUpdate contains {LabelConstants.IssueAddressed} label which should have been removed");
+                Assert.False(issueUpdate.Labels.Contains(LabelConstants.IssueAddressed), $"IssueUpdate contains {LabelConstants.IssueAddressed} label which should have been removed.");
                 // NeedsTeamAttention has been added
                 Assert.True(issueUpdate.Labels.Contains(LabelConstants.NeedsTeamAttention), $"IssueUpdate does not contain {LabelConstants.NeedsTeamAttention} label which should have been added.");
             }
