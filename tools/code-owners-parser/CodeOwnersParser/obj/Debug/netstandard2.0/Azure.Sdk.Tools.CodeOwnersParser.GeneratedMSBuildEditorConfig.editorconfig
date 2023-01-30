@@ -1,0 +1,3 @@
+is_global = true
+build_property.RootNamespace = Azure.Sdk.Tools.CodeOwnersParser
+build_property.ProjectDir = c:\src\github-event-processor-test\tools\code-owners-parser\CodeOwnersParser\

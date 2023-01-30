@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "26xPpn+s3wIVy+JWu6Cnwi+eKmgcRCk40PfHHCO9C/xbGXwope5CV+YvaN2ATb7HDrCjzXpnMLOtrnTxrLoFUA==",
+  "success": true,
+  "projectFilePath": "c:\\src\\github-event-processor-test\\tools\\code-owners-parser\\CodeOwnersParser\\Azure.Sdk.Tools.CodeOwnersParser.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\jasupliz\\.nuget\\packages\\commandline.net\\2.3.0\\commandline.net.2.3.0.nupkg.sha512",
+    "C:\\Users\\jasupliz\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\jasupliz\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",
+    "C:\\Users\\jasupliz\\.nuget\\packages\\outputcolorizer\\2.1.0\\outputcolorizer.2.1.0.nupkg.sha512"
+  ],
+  "logs": []
+}

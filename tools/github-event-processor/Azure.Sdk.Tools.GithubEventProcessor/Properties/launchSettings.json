@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "Azure.Sdk.Tools.GithubActions": {
+      "commandName": "Project"
+    }
+  }
+}
