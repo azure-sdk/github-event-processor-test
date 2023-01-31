@@ -60,11 +60,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                         var issueUpdate = gitHubEventClient.GetIssueUpdate(issueCommentPayload.Issue);
                         issueUpdate.RemoveLabel(LabelConstants.NeedsAuthorFeedback);
                         issueUpdate.AddLabel(LabelConstants.NeedsTeamAttention);
-                        string issueComment =
-                            @$"Hi @{issueCommentPayload.Sender.Login}. Thank you for opening this issue and giving us the opportunity 
-to assist. To help our team better understand your issue and the details of your scenario please provide a 
-response to the question asked above or the information requested above. This will help us more accurately 
-address your issue.";
+                        string issueComment = $"Hi @{issueCommentPayload.Sender.Login}. Thank you for opening this issue and giving us the opportunity to assist. To help our team better understand your issue and the details of your scenario please provide a response to the question asked above or the information requested above. This will help us more accurately address your issue.";
                         gitHubEventClient.CreateComment(issueCommentPayload.Repository.Id, issueCommentPayload.Issue.Number, issueComment);
                     }
                 }
