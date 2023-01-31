@@ -32,7 +32,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
 		        return;
             }
 
-            string eventName = args[1];
+            string eventName = args[0];
             var serializer = new SimpleJsonSerializer();
             string rawJson = File.ReadAllText(args[1]);
             GitHubEventClient gitHubEventClient = new GitHubEventClient(OrgConstants.ProductHeaderName);
