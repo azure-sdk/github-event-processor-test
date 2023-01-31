@@ -95,10 +95,12 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             // Set the path to the fake CODEOWNERS file to be used for testing
             if (hasPartiesToMentionForServiceAttention)
             {
+                CodeOwnerUtils.ResetCodeOwnerEntries();
                 CodeOwnerUtils.codeOwnersFilePathOverride = "Tests.FakeCodeowners/ServiceAttention_has_CODEOWNERS";
             }
             else
             {
+                CodeOwnerUtils.ResetCodeOwnerEntries();
                 CodeOwnerUtils.codeOwnersFilePathOverride = "Tests.FakeCodeowners/ServiceAttention_does_not_have_CODEOWNERS";
             }
             IssueProcessing.ServiceAttention(mockGitHubEventClient, issueEventPayload);
@@ -123,10 +125,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 }
                 else
                 {
-                    if (mockGitHubEventClient.GetComments().Count == 1)
-                    {
-                        Console.WriteLine($"JRS-Remove comment={mockGitHubEventClient.GetComments()[0].Comment}");
-                    }
                     Assert.AreEqual(0, totalUpdates, $"With no parties to mention for Service Attention, the rule should not have produced any updates.");
                 }
             }

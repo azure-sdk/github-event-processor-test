@@ -120,7 +120,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             var mockGitHubEventClient = new MockGitHubEventClient(OrgConstants.ProductHeaderName);
             mockGitHubEventClient.RulesConfiguration.Rules[rule] = ruleState;
             var rawJson = TestHelpers.GetTestEventPayload(payloadFile);
-            var issueCommentPayload = SimpleJsonSerializer.Deserialize<IssueCommentPayload>(rawJson);
+            var updateJson = TestHelpers.SetClosedByDateToYesterday(rawJson);
+            var issueCommentPayload = SimpleJsonSerializer.Deserialize<IssueCommentPayload>(updateJson);
             IssueCommentProcessing.ReopenIssue(mockGitHubEventClient, issueCommentPayload);
 
             // Verify the RuleCheck 

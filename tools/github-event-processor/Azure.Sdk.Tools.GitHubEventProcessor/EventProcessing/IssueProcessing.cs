@@ -142,7 +142,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                         // isn't the only label on the issue.
                         if (issueEventPayload.Issue.Labels.Count > 1)
                         {
-                            Console.WriteLine($"JRS-Remove CodeOwnerUtils.codeOwnersFilePathOverride={CodeOwnerUtils.codeOwnersFilePathOverride}");
                             string partiesToMention = CodeOwnerUtils.GetPartiesToMentionForServiceAttention(issueEventPayload.Issue.Labels);
                             if (null != partiesToMention)
                             {

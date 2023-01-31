@@ -36,10 +36,26 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
             {
                 string codeOwnersFilePath = GetCodeOwnersFilePath();
                 Console.WriteLine($"Loading codeowners file, {codeOwnersFilePath}");
-                _codeOwnerEntries = CodeOwnersFile.ParseFile(GetCodeOwnersFilePath());
+                _codeOwnerEntries = CodeOwnersFile.ParseFile(codeOwnersFilePath);
             }
             return _codeOwnerEntries;
         }
+
+        /// <summary>
+        /// Normally, there's only one CODEOWNER file per repository which is loaded and
+        /// saved for the life of the action. This function is needed for static testing, 
+        /// which loads fake CODEOWNER files for test scenarios.
+        /// </summary>
+        /// <returns></returns>
+        public static void ResetCodeOwnerEntries()
+        {
+            if (_codeOwnerEntries != null)
+            {
+                _codeOwnerEntries.Clear();
+                _codeOwnerEntries = null;
+            }
+        }
+
 
         /// <summary>
         /// Given a list of files from a pull request, return the list of PR labels that

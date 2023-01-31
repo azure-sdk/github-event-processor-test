@@ -115,7 +115,7 @@ address your issue.";
                         issueCommentPayload.Comment.CreatedAt != issueCommentPayload.Issue.ClosedAt.Value &&
                         // Ensure both times are in UTC so timezones don't get tripped up. ClosedAt is nullable
                         // but being that the issue is closed is part of the criteria, this will be set
-                        DateTime.UtcNow >= issueCommentPayload.Issue.ClosedAt.Value.UtcDateTime.AddDays(7))
+                        DateTime.UtcNow <= issueCommentPayload.Issue.ClosedAt.Value.UtcDateTime.AddDays(7))
                     {
                         var issueUpdate = gitHubEventClient.GetIssueUpdate(issueCommentPayload.Issue);
                         issueUpdate.RemoveLabel(LabelConstants.NeedsAuthorFeedback);
