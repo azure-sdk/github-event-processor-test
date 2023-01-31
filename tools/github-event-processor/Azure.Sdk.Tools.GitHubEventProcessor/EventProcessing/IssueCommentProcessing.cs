@@ -121,6 +121,7 @@ address your issue.";
                         issueUpdate.RemoveLabel(LabelConstants.NeedsAuthorFeedback);
                         issueUpdate.RemoveLabel(LabelConstants.NoRecentActivity);
                         issueUpdate.AddLabel(LabelConstants.NeedsTeamAttention);
+                        issueUpdate.State = ItemState.Open;
                     }
                 }
             }
