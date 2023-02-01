@@ -363,12 +363,14 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                         // Don't bother creating the issue update unless at least one of the labels
                         // to be removed exists on the issue
                         if (LabelUtils.HasLabel(issueEventPayload.Issue.Labels, LabelConstants.NeedsTriage) ||
+                            LabelUtils.HasLabel(issueEventPayload.Issue.Labels, LabelConstants.NeedsTeamTriage) ||
                             LabelUtils.HasLabel(issueEventPayload.Issue.Labels, LabelConstants.NeedsTeamAttention) ||
                             LabelUtils.HasLabel(issueEventPayload.Issue.Labels, LabelConstants.NeedsAuthorFeedback) ||
                             LabelUtils.HasLabel(issueEventPayload.Issue.Labels, LabelConstants.NoRecentActivity))
                         {
                             var issueUpdate = gitHubEventClient.GetIssueUpdate(issueEventPayload.Issue);
                             issueUpdate.RemoveLabel(LabelConstants.NeedsTriage);
+                            issueUpdate.RemoveLabel(LabelConstants.NeedsTeamTriage);
                             issueUpdate.RemoveLabel(LabelConstants.NeedsTeamAttention);
                             issueUpdate.RemoveLabel(LabelConstants.NeedsAuthorFeedback);
                             issueUpdate.RemoveLabel(LabelConstants.NoRecentActivity);
