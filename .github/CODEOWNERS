@@ -1,0 +1,22 @@
+# This is a CODEOWNERS file for github-action testing purposes.
+
+#########
+# SDK
+#########
+
+# ServiceLabel: %TestSALabel1 %Service Attention
+# PRLabel: %TestPRLabel1
+/sdk/ServiceDirectory1/     @JimSuplizio
+
+# PRLabel: %TestPRLabel2
+/sdk/ServiceDirectory2/     @benbp
+
+# ServiceLabel: %TestSALabel3 %Service Attention
+/sdk/ServiceDirectory3/     @benbp @JimSuplizio @weshaggard
+
+# PRLabel: %TestPRLabel4
+/sdk/ServiceDirectory4/     @weshaggard
+
+# ServiceLabel: %TestSALabel5 %Service Attention
+# PRLabel: %TestPRLabel5
+/sdk/ServiceDirectory5/     @benbp @weshaggard
