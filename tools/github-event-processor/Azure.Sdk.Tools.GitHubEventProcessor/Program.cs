@@ -15,8 +15,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
     {
         static async Task Main(string[] args)
         {
-            // JRS - Fix this so "dotnet run" aren't the first two args
-            Console.WriteLine($"args.Length={args.Length}");
+            // "dotnet run --" the "--" says don't count dotnet run as arguments
             if (args.Length < 2)
             {
                 Console.WriteLine("Error: There are two required arguments:");

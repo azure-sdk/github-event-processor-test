@@ -46,6 +46,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             var prEventPayload = PullRequestProcessing.DeserializePullRequest(rawJson, SimpleJsonSerializer);
 
             // Set the path to the fake CODEOWNERS file to be used for testing
+            CodeOwnerUtils.ResetCodeOwnerEntries();
             CodeOwnerUtils.codeOwnersFilePathOverride = "Tests.FakeCodeowners/PullRequestTriage_CODEOWNERS";
             Dictionary<string, string> prFilesAndLabels = new Dictionary<string, string>
             {
@@ -87,7 +88,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 // Regardless of permissions, all of the labels based on PR file paths should be added
                 foreach (string label in prFilesAndLabels.Values.ToList())
                 {
-                    Assert.True(issueUpdate.Labels.Contains(label), $"label {label} should have been added because file paths and was not.");
+                    Assert.True(issueUpdate.Labels.Contains(label), $"label {label} should have been added because of the file paths in the PR but was not.");
                 }
 
                 if (hasWriteOrAdmin)

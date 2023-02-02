@@ -457,6 +457,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
 
                     // Verify that NeedsTriage was removed
                     Assert.False(issueUpdate.Labels.Contains(LabelConstants.NeedsTriage), $"IssueUpdate contains {LabelConstants.NeedsTriage} label which should have been removed.");
+                    // Verify that NeedsTeamTriage was removed
+                    Assert.False(issueUpdate.Labels.Contains(LabelConstants.NeedsTeamTriage), $"IssueUpdate contains {LabelConstants.NeedsTeamTriage} label which should have been removed.");
                     // Verify that NeedsTeamAttention was removed
                     Assert.False(issueUpdate.Labels.Contains(LabelConstants.NeedsTeamAttention), $"IssueUpdate contains {LabelConstants.NeedsTeamAttention} label which should have been removed.");
                     // Verify that NeedsAuthorFeedback was removed

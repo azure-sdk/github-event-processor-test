@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Azure.Sdk.Tools.CodeOwnersParser;
+using Azure.Sdk.Tools.GitHubEventProcessor.Constants;
 using Octokit;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
@@ -12,7 +13,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
         static List<CodeOwnerEntry> _codeOwnerEntries = null;
         public static string codeOwnersFilePathOverride = null;
 
-        internal static string GetCodeOwnersFilePath()
+        public static string GetCodeOwnersFilePath()
         {
             if (null != codeOwnersFilePathOverride)
             {
@@ -99,6 +100,12 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
             {
                 foreach (var serviceLabel in codeOwnerEntry.ServiceLabels)
                 {
+                    // Skip the Service Attention label. It's the other labels, that
+                    // aren't Service Attention, that determine which people get added.
+                    if (serviceLabel == LabelConstants.ServiceAttention)
+                    {
+                        continue;
+                    }
                     if (LabelUtils.HasLabel(labels, serviceLabel))
                     {
                         foreach (var owner in codeOwnerEntry.Owners)
