@@ -167,9 +167,12 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// CXP Attention https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#cxp-attention
         /// Trigger: issue labeled
         /// Conditions: Issue is open
-        ///             Label being added is "CXP-Attention"
+        ///             Label being added is "CXP Attention"
         ///             Does not have "Service-Attention" label
         /// Resulting Action: Add issue comment "Thank you for your feedback.  This has been routed to the support team for assistance."
+        /// Note: The comment added for this rule seems odd, since there's not much of anything of consequence in the comment.
+        /// The CXP team has a dashboard and automation specifically tied to the CXP Attention label. The comment is necessary to count
+        ///  as an initial response for SLA metrics.
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated gitHubEventClient</param>
         /// <param name="issueEventPayload">Issue event payload</param>

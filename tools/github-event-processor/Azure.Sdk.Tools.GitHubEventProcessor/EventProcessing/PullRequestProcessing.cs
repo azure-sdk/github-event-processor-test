@@ -108,7 +108,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///     Pull request payload, github.event.pull_request.merged, will be true
         /// Resulting Action: 
         ///     Remove "no-recent-activity" label
-        ///     Reopen pull request
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubClient</param>
         /// <param name="action">The action being performed, from the payload object</param>
