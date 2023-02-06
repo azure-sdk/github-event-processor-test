@@ -100,7 +100,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///         Remove "no-recent-activity" label
         ///         Reopen pull request
         ///     else
-        ///         Create a comment: "Sorry, @commenter, only the original author or someone with write collaborator permissions can reopen this pull request."
+        ///         Create a comment: "Sorry, @commenter, only the original author can reopen this pull request."
         /// </summary>
         /// <param name="gitHubEventClient"></param>
         /// <param name="prCommentPayload"></param>
@@ -136,7 +136,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                         }
                         else
                         {
-                            string prComment = $"Sorry, @{prCommentPayload.Sender.Login}, only the original author or someone with write collaborator permissions can reopen this pull request.";
+                            string prComment = $"Sorry, @{prCommentPayload.Sender.Login}, only the original author can reopen this pull request.";
                             gitHubEventClient.CreateComment(prCommentPayload.Repository.Id, prCommentPayload.Issue.Number, prComment);
                         }
                     }
