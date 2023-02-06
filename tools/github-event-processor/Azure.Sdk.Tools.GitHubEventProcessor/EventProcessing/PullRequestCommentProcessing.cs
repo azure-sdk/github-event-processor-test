@@ -60,7 +60,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                         !CommentUtils.CommentContainsText(prCommentPayload.Comment.Body, CommentConstants.ScheduledCloseFragment))
                     {
                         bool removeLabel = false;
-                        // If the commenter is the pull request author skip then the label can be
+                        // If the commenter is the pull request author then the label can be
                         // removed without a permissions check
                         if (prCommentPayload.Issue.User.Login == prCommentPayload.Sender.Login)
                         {

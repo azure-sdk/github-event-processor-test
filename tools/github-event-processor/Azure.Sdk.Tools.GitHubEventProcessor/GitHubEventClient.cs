@@ -147,7 +147,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         public async Task WriteRateLimits(string prependMessage = null)
         {
             var miscRateLimit = await GetRateLimits();
-            string rateLimitMessage = $"Limit={miscRateLimit.Resources.Core.Limit}, Remaining={miscRateLimit.Resources.Core.Remaining}";
+            string rateLimitMessage = $"Limit={miscRateLimit.Resources.Core.Limit}, Remaining={miscRateLimit.Resources.Core.Remaining}, Reset={miscRateLimit.Resources.Core.Reset}";
             if (prependMessage != null)
             {
                 rateLimitMessage = $"{prependMessage} {rateLimitMessage}";
