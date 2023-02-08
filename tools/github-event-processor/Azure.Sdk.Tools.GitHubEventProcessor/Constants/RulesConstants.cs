@@ -39,7 +39,12 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Constants
         public const string ResetPullRequestActivity = "ResetPullRequestActivity";
 
         // Cron task rules
-
+        public const string CloseStaleIssues = "CloseStaleIssues";
+        public const string CloseStalePullRequests = "CloseStalePullRequests";
+        public const string IdentifyStaleIssues = "IdentifyStaleIssues";
+        public const string IdentifyStalePullRequests = "IdentifyStalePullRequests";
+        public const string CloseAddressedIssues = "CloseAddressedIssues";
+        public const string LockClosedIssues = "LockClosedIssues";
 
     }
 }

@@ -22,15 +22,15 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             private int _issueOrPullRequestNumber;
             private string _comment;
 
-            public long RepositoryId { get { return this._repositoryId; } }
-            public int IssueOrPullRequestNumber { get { return this._issueOrPullRequestNumber; } }
-            public string Comment { get { return this._comment; } }
+            public long RepositoryId { get { return _repositoryId; } }
+            public int IssueOrPullRequestNumber { get { return _issueOrPullRequestNumber; } }
+            public string Comment { get { return _comment; } }
 
             public GitHubComment(long repositoryId, int issueOrPullRequestNumder, string comment) 
             { 
-                this._repositoryId = repositoryId;
-                this._issueOrPullRequestNumber = issueOrPullRequestNumder;
-                this._comment = comment;
+                _repositoryId = repositoryId;
+                _issueOrPullRequestNumber = issueOrPullRequestNumder;
+                _comment = comment;
             }
         }
 
@@ -41,25 +41,67 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             private long _reviewId;
             private string _dismissalMessage;
 
-            public long RepositoryId { get { return this._repositoryId; } }
-            public int PullRequestNumber { get { return this._pullRequestNumber; } }
-            public long ReviewId { get { return this._reviewId; } }
-            public string DismissalMessage { get { return this._dismissalMessage; } }
+            public long RepositoryId { get { return _repositoryId; } }
+            public int PullRequestNumber { get { return _pullRequestNumber; } }
+            public long ReviewId { get { return _reviewId; } }
+            public string DismissalMessage { get { return _dismissalMessage; } }
 
             public GitHubReviewDismissal(long repositoryId, int pullRequestNumber, long reviewId, string dismissalMessage)
             {
-                this._repositoryId = repositoryId;
-                this._pullRequestNumber = pullRequestNumber;
-                this._reviewId = reviewId;
-                this._dismissalMessage = dismissalMessage;
+                _repositoryId = repositoryId;
+                _pullRequestNumber = pullRequestNumber;
+                _reviewId = reviewId;
+                _dismissalMessage = dismissalMessage;
             }
         }
+
+        public class GitHubIssueToLock
+        {
+            private long _repositoryId;
+            private int _issueNumber;
+            private LockReason _lockReason;
+
+            public long RepositoryId { get { return _repositoryId; } }
+            public int IssueNumber { get { return _issueNumber; } }
+            public LockReason LockReason { get { return _lockReason; } }
+
+            public GitHubIssueToLock(long repositoryId, int issueNumber, LockReason lockReason)
+            {
+                _repositoryId = repositoryId;
+                _issueNumber = issueNumber;
+                _lockReason = lockReason;
+            }
+        }
+
+        public class GitHubIssueToUpdate
+        {
+            private long _repositoryId;
+            private int _issueOrPRNumber;
+            private IssueUpdate _issueUpdate;
+
+            public long RepositoryId { get { return _repositoryId; } }
+            public int IssueOrPRNumber { get { return _issueOrPRNumber; } }
+            public IssueUpdate IssueUpdate { get { return _issueUpdate; } }
+
+            public GitHubIssueToUpdate(long repositoryId, int issueOrPRNumber, IssueUpdate issueUpdate)
+            {
+                _repositoryId = repositoryId;
+                _issueOrPRNumber = issueOrPRNumber;
+                _issueUpdate = issueUpdate;
+            }
+        }
+
 
         private GitHubClient _gitHubClient = null;
         private RulesConfiguration _rulesConfiguration = null;
         protected IssueUpdate _issueUpdate = null;
         protected List<GitHubComment> _gitHubComments = new List<GitHubComment>();
         protected List<GitHubReviewDismissal> _gitHubReviewDismissals = new List<GitHubReviewDismissal>();
+        // Locking issues is only done through scheduled event processing
+        protected List<GitHubIssueToLock> _gitHubIssuesToLock = new List<GitHubIssueToLock>();
+        // Scheduled event processing can process multiple issues, this list will not be used
+        // for action processing which uses a shared event.
+        protected List<GitHubIssueToUpdate> _gitHubIssuesToUpdate = new List<GitHubIssueToUpdate>();
 
         public RulesConfiguration RulesConfiguration
         {
@@ -85,13 +127,12 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         {
             int numUpdates = 0;
 
-            // Process the issue update
-            if (this._issueUpdate != null) 
+            if (_issueUpdate != null)
             {
                 numUpdates++;
                 try
                 {
-                    await this._gitHubClient.Issue.Update(repositoryId, issueOrPullRequestNumber, this._issueUpdate);
+                    await _gitHubClient.Issue.Update(repositoryId, issueOrPullRequestNumber, _issueUpdate);
                 }
                 catch (Exception ex)
                 {
@@ -101,14 +142,14 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             }
 
             // Process any comments
-            foreach (var comment in this._gitHubComments)
+            foreach (var comment in _gitHubComments)
             {
                 numUpdates++;
                 try
                 {
-                    await this._gitHubClient.Issue.Comment.Create(comment.RepositoryId,
-                                                                  comment.IssueOrPullRequestNumber,
-                                                                  comment.Comment);
+                    await _gitHubClient.Issue.Comment.Create(comment.RepositoryId,
+                                                             comment.IssueOrPullRequestNumber,
+                                                             comment.Comment);
                 }
                 catch (Exception ex)
                 {
@@ -117,17 +158,47 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
                 }
             }
 
-            foreach (var dismissal in this._gitHubReviewDismissals)
+            foreach (var dismissal in _gitHubReviewDismissals)
             {
                 numUpdates++;
                 try
                 {
                     var prReview = new PullRequestReviewDismiss();
                     prReview.Message = dismissal.DismissalMessage;
-                    await this._gitHubClient.PullRequest.Review.Dismiss(dismissal.RepositoryId,
-                                                                        dismissal.PullRequestNumber,
-                                                                        dismissal.ReviewId,
-                                                                        prReview);
+                    await _gitHubClient.PullRequest.Review.Dismiss(dismissal.RepositoryId,
+                                                                   dismissal.PullRequestNumber,
+                                                                   dismissal.ReviewId,
+                                                                   prReview);
+                }
+                catch (Exception ex)
+                {
+                    // JRS - what to do if this throws?
+                    Console.WriteLine(ex);
+                }
+            }
+
+            foreach (var issueToLock in _gitHubIssuesToLock)
+            {
+                numUpdates++;
+                try
+                {
+                    await _gitHubClient.Issue.LockUnlock.Lock(issueToLock.RepositoryId, 
+                                                              issueToLock.IssueNumber, 
+                                                              issueToLock.LockReason);
+                }
+                catch (Exception ex)
+                {
+                    // JRS - what to do if this throws?
+                    Console.WriteLine(ex);
+                }
+            }
+
+            foreach (var issueToUpdate in _gitHubIssuesToUpdate)
+            {
+                numUpdates++;
+                try
+                {
+                    await _gitHubClient.Issue.Update(issueToUpdate.RepositoryId, issueToUpdate.IssueOrPRNumber, issueToUpdate.IssueUpdate);
                 }
                 catch (Exception ex)
                 {
@@ -164,41 +235,55 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// <returns>Octokit.MiscellaneousRateLimit which contains the rate limit information.</returns>
         public async Task<MiscellaneousRateLimit> GetRateLimits()
         {
-            return await this._gitHubClient.RateLimit.GetRateLimits();
+            return await _gitHubClient.RateLimit.GetRateLimits();
         }
 
         /// <summary>
-        /// Overloaded convenience function that'll return the existing IssueUpdate, if non-null, and
-        /// create one to return, if null. This prevents the same code from being in every function
-        /// that needs an IssueUpdate.
+        /// Overloaded convenience function that'll return the IssueUpdate. Actions all make changes to
+        /// the same, shared, IssueUpdate because they're processing on the same event. For scheduled 
+        /// event processing, there will be multiple, unique IssueUpdates and there won't be a shared one.
         /// </summary>
         /// <param name="issue">Octokit.Issue from the event payload</param>
-        /// <param name="issueUpdate">Octokit.IssueUpdate that'll be returned if non-null</param>
+        /// <param name="isProcessingAction">Whether or not actions are being processed. Default is true.</param>
         /// <returns>Octokit.IssueUpdate</returns>
-        public IssueUpdate GetIssueUpdate(Issue issue)
+        public IssueUpdate GetIssueUpdate(Issue issue, bool isProcessingAction = true)
         {
-            if (null == this._issueUpdate)
+            if (isProcessingAction)
             {
-                this._issueUpdate = issue.ToUpdate();
+                if (null == _issueUpdate)
+                {
+                    _issueUpdate = issue.ToUpdate();
+                }
+                return _issueUpdate;
             }
-            return this._issueUpdate;
+            else
+            {
+                return issue.ToUpdate();
+            }
         }
 
         /// <summary>
-        /// Overloaded convenience function that'll return the existing IssueUpdate, if non-null, and
-        /// create one to return, if null. This prevents the same code from being in every function
-        /// that needs an IssueUpdate. 
+        /// Overloaded convenience function that'll return the IssueUpdate. Actions all make changes to
+        /// the same, shared, IssueUpdate because they're processing on the same event. For scheduled 
+        /// event processing, there will be multiple, unique IssueUpdates and there won't be shared one.
         /// </summary>
         /// <param name="pullRequest">Octokit.PullRequest from the event payload</param>
-        /// <param name="issueUpdate">Octokit.IssueUpdate that'll be returned if non-null</param>
+        /// <param name="isProcessingAction">Whether or not actions are being processed. Default is true.</param>
         /// <returns>Octokit.IssueUpdate</returns>
-        public IssueUpdate GetIssueUpdate(PullRequest pullRequest)
+        public IssueUpdate GetIssueUpdate(PullRequest pullRequest, bool isProcessingAction = true)
         {
-            if (null == this._issueUpdate)
+            if (isProcessingAction)
             {
-                this._issueUpdate = CreateIssueUpdateForPR(pullRequest);
+                if (null == _issueUpdate)
+                {
+                    _issueUpdate = CreateIssueUpdateForPR(pullRequest);
+                }
+                return _issueUpdate;
             }
-            return this._issueUpdate;
+            else
+            {
+                return CreateIssueUpdateForPR(pullRequest);
+            }
         }
 
         /// <summary>
@@ -264,7 +349,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         public void CreateComment(long repositoryId, int issueOrPullRequestNumber, string comment)
         {
             GitHubComment gitHubComment = new GitHubComment(repositoryId, issueOrPullRequestNumber, comment);
-            this._gitHubComments.Add(gitHubComment);
+            _gitHubComments.Add(gitHubComment);
         }
 
         /// <summary>
@@ -275,7 +360,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// <returns></returns>
         public virtual async Task<IReadOnlyList<PullRequestReview>> GetReviewsForPullRequest(long repositoryId, int pullRequestNumber)
         {
-            return await this._gitHubClient.PullRequest.Review.GetAll(repositoryId, pullRequestNumber);
+            return await _gitHubClient.PullRequest.Review.GetAll(repositoryId, pullRequestNumber);
         }
 
         public void DismissReview(long repositoryId, int pullRequestNumber, long reviewId, string dismissalMessage)
@@ -284,7 +369,33 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
                                                                                     pullRequestNumber, 
                                                                                     reviewId, 
                                                                                     dismissalMessage);
-            this._gitHubReviewDismissals.Add(gitHubReviewDismissal);
+            _gitHubReviewDismissals.Add(gitHubReviewDismissal);
+        }
+
+        /// <summary>
+        /// Create a GitHubIssueToLock and add it to the list of Issues to lock which gets
+        /// gets updated with the pending updates.
+        /// </summary>
+        /// <param name="repositoryId"></param>
+        /// <param name="issueNumber"></param>
+        /// <param name="lockReason"></param>
+        public void LockIssue(long repositoryId, int issueNumber, LockReason lockReason)
+        {
+            GitHubIssueToLock gitHubIssueToLock = new GitHubIssueToLock(repositoryId,
+                                                                        issueNumber,
+                                                                        lockReason);
+            _gitHubIssuesToLock.Add(gitHubIssueToLock);
+        }
+
+        /// <summary>
+        /// Scheduled events will process multiple issue update. This function adds them to
+        /// list of IssueUpdates that will get processed with the pending updates.
+        /// </summary>
+        /// <param name="issueUpdate"></param>
+        public void AddToIssueUpdateList(long repositoryId, int issueOrPRNumber, IssueUpdate issueUpdate)
+        {
+            GitHubIssueToUpdate gitHubIssueToUpdate = new GitHubIssueToUpdate(repositoryId, issueOrPRNumber, issueUpdate);
+            _gitHubIssuesToUpdate.Add(gitHubIssueToUpdate);
         }
 
 
@@ -300,7 +411,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             // For whatever reason the default page size is 30 instead of 100.
             ApiOptions apiOptions = new ApiOptions();
             apiOptions.PageSize = 100;
-            return await this._gitHubClient.PullRequest.Files(repositoryId, pullRequestNumber, apiOptions);
+            return await _gitHubClient.PullRequest.Files(repositoryId, pullRequestNumber, apiOptions);
         }
 
         /// <summary>
@@ -311,7 +422,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// <returns></returns>
         public virtual async Task<bool> IsUserCollaborator(long repositoryId, string user)
         {
-            return await this._gitHubClient.Repository.Collaborator.IsCollaborator(repositoryId, user);
+            return await _gitHubClient.Repository.Collaborator.IsCollaborator(repositoryId, user);
         }
 
         /// <summary>
@@ -323,7 +434,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         public virtual async Task<bool> IsUserMemberOfOrg(string orgName, string user)
         {
             // Chances are the orgname is only going to be "Azure"
-            return await this._gitHubClient.Organization.Member.CheckMember(orgName, user);
+            return await _gitHubClient.Organization.Member.CheckMember(orgName, user);
         }
 
         /// <summary>
@@ -376,7 +487,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         {
             try
             {
-                CollaboratorPermission collaboratorPermission = await this._gitHubClient.Repository.Collaborator.ReviewPermission(repositoryId, user);
+                CollaboratorPermission collaboratorPermission = await _gitHubClient.Repository.Collaborator.ReviewPermission(repositoryId, user);
                 // If the user has one of the permissions on the list return true
                 foreach (var permission in permissionList)
                 {
@@ -471,7 +582,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// <returns></returns>
         public virtual async Task<SearchIssuesResult> QueryIssues(SearchIssuesRequest searchIssuesRequest)
         {
-            var searchIssueResult = await this._gitHubClient.Search.SearchIssues(searchIssuesRequest);
+            var searchIssueResult = await _gitHubClient.Search.SearchIssues(searchIssuesRequest);
             return searchIssueResult;
         }
 
