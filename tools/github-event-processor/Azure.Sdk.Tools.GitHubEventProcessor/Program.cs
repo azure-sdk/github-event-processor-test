@@ -76,8 +76,19 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
                     }
                 case EventConstants.schedule:
                     {
+                        if (args.Length < 3)
+                        {
+                            Console.WriteLine("Error: For scheduled tasks there are three required arguments:");
+                            Console.WriteLine($" 1. The github.event_name (which will be {EventConstants.schedule} for cron tasks.");
+                            Console.WriteLine(" 2. The GITHUB_PAYLOAD json file.");
+                            Console.WriteLine(" 3. The cron task to run.");
+                            Environment.Exit(1);
+                            return;
+                        }
+
                         ScheduledEventGitHubPayload scheduledEventPayload = serializer.Deserialize<ScheduledEventGitHubPayload>(rawJson);
-                        await ScheduledEventProcessing.ProcessScheduledEvent(gitHubEventClient, scheduledEventPayload);
+                        string cronTaskToRun = args[2];
+                        await ScheduledEventProcessing.ProcessScheduledEvent(gitHubEventClient, scheduledEventPayload, cronTaskToRun);
                         break;
                     }
                 default:

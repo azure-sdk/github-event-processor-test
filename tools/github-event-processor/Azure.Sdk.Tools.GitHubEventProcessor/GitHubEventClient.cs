@@ -1,18 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using Azure.Sdk.Tools.GitHubEventProcessor.GitHubPayload;
 using Azure.Sdk.Tools.GitHubEventProcessor.Utils;
 using Octokit;
-using Octokit.Internal;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor
 {
-    // Class to store the GitHubClient and Rules instances
-    // This class will also store the messages so we can do updates
-    // at the end of processing instead of only the IssueUpdate being at the end
+    // Class to store the GitHubClient and Rules instances.
+    // This class will also store any updates that are the result of rules or cron task processing.
+    // All updates will be processed at the end of rules or cron task processing.
     public class GitHubEventClient
     {
         private static readonly string NotAUserPartial = "is not a user";
@@ -94,6 +94,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
 
         private GitHubClient _gitHubClient = null;
         private RulesConfiguration _rulesConfiguration = null;
+        // Protected instead of private so the mock class can access them
         protected IssueUpdate _issueUpdate = null;
         protected List<GitHubComment> _gitHubComments = new List<GitHubComment>();
         protected List<GitHubReviewDismissal> _gitHubReviewDismissals = new List<GitHubReviewDismissal>();
@@ -623,6 +624,61 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             // the .github or .github/workflows directory
             var rulesConfiguration = new RulesConfiguration(rulesConfigLocation);
             return rulesConfiguration;
+        }
+
+        public class LabelResponse
+        {
+            public string[] Labels { get; set; }
+        }
+
+        public virtual async Task<List<string>> QueryAILabelService(IssueEventGitHubPayload issueEventPayload)
+        {
+            // Need to query the keyvault to get the key
+            // https://ms.portal.azure.com/#view/WebsitesExtension/FunctionMenuBlade/~/functionKeys/resourceId/%2Fsubscriptions%2Fa18897a6-7e44-457d-9260-f2854c0aca42%2FresourceGroups%2Fissue-labeler%2Fproviders%2FMicrosoft.Web%2Fsites%2Fissuelabeler%2Ffunctions%2FAzureSdkIssueLabelerService
+            // JRS - Wes and Ben are looking at the KV access and whatnot and for the AIServiceKey, I should be expecting an environment
+            // variable with this value in it.
+            string AIServiceKey = Environment.GetEnvironmentVariable("AI_SERVICE_KEY");
+            if (string.IsNullOrEmpty(AIServiceKey))
+            {
+                throw new ApplicationException("AI_SERVICE_KEY cannot be null or empty");
+            }
+            string requestUrl = $"https://issuelabeler.azurewebsites.net/api/AzureSdkIssueLabelerService?code={AIServiceKey}";
+
+            //var payload = new
+            //{
+            //    IssueNumber = 33697,
+            //    Title = "[FEATURE REQ] Azure Function EventHub allow passing of the PartitionKey in the EventData ctor",
+            //    Body = "### Library name\n\nAzure.Messaging.EventHubs\n\n### Please describe the feature.\n\nIt would be great if could pass a PartitionKey while creating a new EventData object.\n\nThis would allow the use of user defined partition keys when adding message via the EventHub output binding's `IAsyncCollector.AddAsync` method.\n\nThis is desirable over the use of `EventHubProducerClient.SendAsync` due to the fact that `IAsyncCollector.AddAsync` will queue the message and batch behind the scenes in parallel, whereas `EventHubProducerClient.SendAsync` needs to be awaited on each send of a single message or a batch.\n\nThe two mechanisms behave quite differently from each other and we've seen large performance gains while using the `IAsyncCollector` and `IAsyncCollector.Flush` compared to `EventHubProducerClient.SendAsync`.\n\n```cs\nIAsyncCollector collector = from output binding\nEventData message = new EventData(data);\nawait collector.AddAsync(message);      <-- returns immediately and is sent in parallel\n...\nmore stuff\n...\nawait collector.Flush();      <-- waits for remaining messages to send\n```\nvs\n```cs\nEventHubProducerClient client = from output binding\nEventData message = new EventData(data);\nawait client.SendAsync(message);      <-- waits for the send operation before returning\n```\n\nThis is similar to some of the comments in https://github.com/Azure/azure-sdk-for-net/issues/28245 but it's not the same as the issue itself.\n\nWe've done some testing using the `EventHubsModelFactory.EventData` testing method and verified the partition key when set via this method appears to be used correctly by `IAsyncCollector` and the events do in fact send and arrive downstream in the correct batches with the set partition.\n\nClearly we can't use this testing and mocking method for production though. \n\nOr maybe there's another way to use the `IAsyncCollector`?\n\nThanks :-)",
+            //    IssueUserLogin = "fuzzlebuck",
+            //    RepositoryName = "azure-sdk-for-net",
+            //    RepositoryOwnerName = "Azure"
+            //};
+
+            var payload = new
+            {
+                IssueNumber = issueEventPayload.Issue.Number,
+                issueEventPayload.Issue.Title,
+                issueEventPayload.Issue.Body,
+                IssueUserLogin = issueEventPayload.Issue.User.Login,
+                RepositoryName = issueEventPayload.Repository.Name,
+                RepositoryOwnerName = issueEventPayload.Repository.Owner.Login
+            };
+            using var client = new HttpClient();
+            List<string> returnList;
+            var response = await client.PostAsJsonAsync(requestUrl, payload).ConfigureAwait(false);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var suggestions = await response.Content.ReadFromJsonAsync<LabelResponse>().ConfigureAwait(false);
+                returnList = new List<string>(suggestions.Labels);
+            }
+            // JRS
+            // The AI label service might get an update (possibly HttpStatusCode.NotImplemented) so we can differentiate
+            // between an actual error and the repository, itself, not having an AI label model.
+            else
+            {
+                returnList = new List<string>();
+            }
+            return returnList;
         }
     }
 }

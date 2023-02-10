@@ -4,6 +4,13 @@ using System.Threading.Tasks;
 using Azure.Sdk.Tools.GitHubEventProcessor.GitHubPayload;
 using Azure.Sdk.Tools.GitHubEventProcessor.Constants;
 using Azure.Sdk.Tools.GitHubEventProcessor.Utils;
+using System.ComponentModel;
+using System.Diagnostics.Metrics;
+using static System.Net.Mime.MediaTypeNames;
+using System.Reflection.Emit;
+using System.Reflection.Metadata;
+using System.Xml.Linq;
+using System.Collections.Generic;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
 {
@@ -42,14 +49,36 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// Trigger: issue opened
         /// Conditions: Issue has no labels
         ///             Issue has no assignee
-        /// Resulting Action: JRS-TBD, I need the AI service to query
+        /// Resulting Actions:
+        ///     Evaluate the user that created the issue:
+        ///         IF creator is NOT an Azure SDK team owner
+        ///         AND is NOT a member of the Azure organization
+        ///         AND does NOT have write permission
+        ///         AND does NOT have admin permission:
+        ///             Add "customer-reported" label
+        ///             Add "question" label
+        ///     Query AI label service for label suggestions:
+        ///     IF labels were predicted:
+        ///         Assign returned labels to the issue
+        ///         Add "needs-team-attention" label to the issue
+        ///         IF service label is associated with an Azure SDK team member:
+        ///             IF a single team member:
+        ///                 Assign team member to the issue
+        ///             ELSE
+        ///                 Assign a random team member from the set to the issue
+        ///                 Add a comment mentioning the other team members from the set
+        ///                 Add comment indicating issue was routed for assistance: "Thank you for your feedback.  Tagging and routing to the team member best able to assist."
+        ///         ELSE (service label is not associated with an Azure SDK team member)
+        ///             Add "CXP Attention" label to the issue
+        ///             Create a comment mentioning(content from .NET rule #30)
+        ///     ELSE (labels were not predicted)
+        ///         Add "needs-triage" label to the issue
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated gitHubEventClient</param>
         /// <param name="issueEventPayload">Issue event payload</param>
         /// <returns></returns>
         public static async Task InitialIssueTriage(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
-
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.InitialIssueTriage))
             {
                 if (issueEventPayload.Action == ActionConstants.Opened)
@@ -57,34 +86,65 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                     // If there are no labels and no assignees
                     if ((issueEventPayload.Issue.Labels.Count == 0) && (issueEventPayload.Issue.Assignee == null))
                     {
-                        // JRS - IF creator is NOT an Azure SDK team owner - 
-                        bool isMember = await gitHubEventClient.IsUserMemberOfOrg(OrgConstants.Azure, issueEventPayload.Sender.Login);
-                        bool isCollaborator = await gitHubEventClient.IsUserCollaborator(issueEventPayload.Repository.Id, issueEventPayload.Sender.Login);
-                        if (!isMember && !isCollaborator)
+                        // JRS - IF creator is NOT an Azure SDK team owner
+                        // There is no way to check this today without changes to codeowners.
+                        //bool isAzureSDKTeamOwner = false;
+                        //if (!isAzureSDKTeamOwner)
+                        //{
+                        //    bool isMember = await gitHubEventClient.IsUserMemberOfOrg(OrgConstants.Azure, issueEventPayload.Sender.Login);
+                        //    // If the user is not a member of Azure
+                        //    if (!isMember)
+                        //    {
+                        //        // If the user does not have write or admin permissions 
+                        //        bool hasWriteOrAdminPermissions = await gitHubEventClient.DoesUserHaveAdminOrWritePermission(issueEventPayload.Repository.Id, issueEventPayload.Sender.Login);
+                        //        if (!hasWriteOrAdminPermissions)
+                        //        {
+                        //            var issueUpdate = gitHubEventClient.GetIssueUpdate(issueEventPayload.Issue);
+                        //            issueUpdate.AddLabel(LabelConstants.CustomerReported);
+                        //            issueUpdate.AddLabel(LabelConstants.Question);
+                        //        }
+                        //    }
+                        //}
+
+                        // 
+
+                        List<string> labelSuggestions = await gitHubEventClient.QueryAILabelService(issueEventPayload);
+                        IssueUpdate issueUpdate = gitHubEventClient.GetIssueUpdate(issueEventPayload.Issue);
+                        if (labelSuggestions.Count > 0 )
                         {
-                            var issueUpdate = gitHubEventClient.GetIssueUpdate(issueEventPayload.Issue);
+                            foreach (string label in labelSuggestions)
+                            {
+                                issueUpdate.AddLabel(label);
+                            }
+                            issueUpdate.AddLabel(LabelConstants.NeedsTeamTriage);
+                        }
+                        else
+                        {
                             issueUpdate.AddLabel(LabelConstants.NeedsTriage);
                         }
-                    }
-                    /* JRS The AI label service does not exist yet
-                    Query AI label service for suggestions:
-                    IF labels were predicted:
-                        - Assign returned labels to the issue
-                        - Add "needs-team-attention" label to the issue
-                        IF service label is associated with an Azure SDK team member:
-                            IF a single team member:
-                                - Assign team member to the issue
+                        /* Query AI label service for suggestions:
+                        IF labels were predicted:
+                            - Assign returned labels to the issue
+                            - Add "needs-team-triage"
+                            // JRS - the above additions are what happens today
+                            // JRS - do not add needs-team-attention unless we can get the information for what's below.
+                                - Add "needs-team-attention" label to the issue
+                            // JRS - There is no way to do this today.
+                            IF service label is associated with an Azure SDK team member:
+                                IF a single team member:
+                                    - Assign team member to the issue
+                                ELSE
+                                    - Assign a random team member from the set to the issue
+                                    - Add a comment mentioning the other team members from the set
+                                - Add comment indicating issue was routed for assistance  
+                                    (text: "Thank you for your feedback.  Tagging and routing to the team member best able to assist.")
                             ELSE
-                                - Assign a random team member from the set to the issue
-                                - Add a comment mentioning the other team members from the set
-                            - Add comment indicating issue was routed for assistance  
-                                (text: "Thank you for your feedback.  Tagging and routing to the team member best able to assist.")
+                                - Add "CXP Attention" label to the issue
+                                - Create a comment mentioning (content from .NET rule #30)
                         ELSE
-                            - Add "CXP Attention" label to the issue
-                            - Create a comment mentioning (content from .NET rule #30)
-                    ELSE
-                        - Add "needs-triage" label to the issue
-                    */
+                            - Add "needs-triage" label to the issue
+                        */
+                    }
                 }
             }
         }

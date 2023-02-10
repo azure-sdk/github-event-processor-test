@@ -49,7 +49,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
         public override Task<int> ProcessPendingUpdates(long repositoryId, int issueOrPullRequestNumber)
         {
             int numUpdates = 0;
-            if (this._issueUpdate != null)
+            if (_issueUpdate != null)
             {
                 Console.WriteLine("MockGitHubEventClient::ProcessPendingUpdates, Issue Update is non-null");
                 numUpdates++;
@@ -58,10 +58,13 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
             {
                 Console.WriteLine("MockGitHubEventClient::ProcessPendingUpdates, Issue Update is null");
             }
-            Console.WriteLine($"MockGitHubEventClient::ProcessPendingUpdates, number of pending comments = {this._gitHubComments.Count}");
-            numUpdates += this._gitHubComments.Count;
-            Console.WriteLine($"MockGitHubEventClient::ProcessPendingUpdates, number of pending dismissals = {this._gitHubReviewDismissals.Count}");
-            numUpdates += this._gitHubReviewDismissals.Count;
+            Console.WriteLine($"MockGitHubEventClient::ProcessPendingUpdates, number of pending comments = {_gitHubComments.Count}");
+            numUpdates += _gitHubComments.Count;
+            Console.WriteLine($"MockGitHubEventClient::ProcessPendingUpdates, number of pending dismissals = {_gitHubReviewDismissals.Count}");
+            numUpdates += _gitHubReviewDismissals.Count;
+
+            Console.WriteLine($"MockGitHubEventClient::ProcessPendingUpdates, number of pending IssueUpdates = {_gitHubIssuesToUpdate.Count}");
+            numUpdates += _gitHubIssuesToUpdate.Count;
             return Task.FromResult(numUpdates);
         }
 
@@ -320,7 +323,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
         /// <summary>
         /// Convenience function for testing to get the list of comment updates 
         /// </summary>
-        /// <returns>List<GitHubComment></returns>
+        /// <returns>List of GitHubComment<GitHubComment></returns>
         public List<GitHubComment> GetComments()
         {
             return _gitHubComments;
@@ -329,7 +332,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
         /// <summary>
         /// Convenience function for testing to get the list of dismissals 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>List of GitHubReviewDismissal</returns>
         public List<GitHubReviewDismissal> GetReviewDismissals()
         {
             return _gitHubReviewDismissals;
@@ -339,10 +342,21 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
         /// Convenience function for testing, get the issue update stored on the GitHubEventClient, rather
         /// than creating one from the issue or pull request payload
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Octokit.net IssueUpdate</returns>
         public IssueUpdate GetIssueUpdate()
         {
             return _issueUpdate;
+        }
+
+        /// <summary>
+        /// Convenience function for testing, get the list of GitHub issues to update. For normal action
+        /// processing this list won't be used as actions make changes to a common IssueUpdate. For scheduled,
+        /// or cron, tasks, those will potentially end up updating multiple, differnt issues.
+        /// </summary>
+        /// <returns>List of GitHubIssueToUpdate</returns>
+        public List<GitHubIssueToUpdate> GetGitHubIssuesToUpdate()
+        {
+            return _gitHubIssuesToUpdate;
         }
     }
 }

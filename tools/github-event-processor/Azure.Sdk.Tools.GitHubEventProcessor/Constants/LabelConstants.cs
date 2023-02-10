@@ -17,6 +17,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Constants
         public static readonly string NeedsTeamTriage = "needs-team-triage";
         public static readonly string NeedsTriage = "needs-triage";
         public static readonly string NoRecentActivity = "no-recent-activity";
+        public static readonly string Question = "question";
         public static readonly string ServiceAttention = "Service Attention";
     }
 }
