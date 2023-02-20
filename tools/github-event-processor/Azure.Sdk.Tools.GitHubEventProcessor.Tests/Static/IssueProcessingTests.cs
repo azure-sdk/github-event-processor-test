@@ -25,10 +25,10 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
         /// Resulting Action:Query the AI Service
         ///     If the AI Service 
         /// </summary>
-        /// <param name="rule"></param>
-        /// <param name="payloadFile"></param>
-        /// <param name="ruleState"></param>
-        /// <param name="AIServiceReturnsLabels"></param>
+        /// <param name="rule">String, RulesConstants for the rule being tested</param>
+        /// <param name="payloadFile">JSon payload file for the event being tested</param>
+        /// <param name="ruleState">Whether or not the rule is on/off</param>
+        /// <param name="AIServiceReturnsLabels">Whether or not the AI Service should return labels</param>
         /// <returns></returns>
         [TestCase(RulesConstants.InitialIssueTriage, "Tests.JsonEventPayloads/InitialIssueTriage_issue_opened_no_labels_no_assignee.json", RuleState.On, true)]
         [TestCase(RulesConstants.InitialIssueTriage, "Tests.JsonEventPayloads/InitialIssueTriage_issue_opened_no_labels_no_assignee.json", RuleState.On, false)]

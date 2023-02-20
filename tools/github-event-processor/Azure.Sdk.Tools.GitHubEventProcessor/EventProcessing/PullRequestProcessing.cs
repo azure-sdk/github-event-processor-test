@@ -32,7 +32,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///         Add "Community Contribution" label
         ///         Create issue comment: "Thank you for your contribution @{issueAuthor} ! We will review the pull request and get back to you soon."
         /// </summary>
-        /// <param name="gitHubEventClient">Authenticated GitHubClient</param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="prEventPayload">Pull Request event payload</param>
         /// <returns></returns>
         public static async Task PullRequestTriage(GitHubEventClient gitHubEventClient,
@@ -75,7 +75,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// Reset Pull Request Activity https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#reset-pull-request-activity
         /// See Common_ResetPullRequestActivity function for details
         /// </summary>
-        /// <param name="gitHubEventClient">Authenticated GitHubClient</param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="prEventPayload">Pull Request event payload</param>
         /// <returns></returns>
         public static void ResetPullRequestActivity(GitHubEventClient gitHubEventClient,
@@ -109,7 +109,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// Resulting Action: 
         ///     Remove "no-recent-activity" label
         /// </summary>
-        /// <param name="gitHubEventClient">Authenticated GitHubClient</param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="action">The action being performed, from the payload object</param>
         /// <param name="pullRequest">Octokit.PullRequest object from the respective payload</param>
         /// <param name="sender">Octokit.User object from the respective payload. This will be the Sender that initiated the event.</param>

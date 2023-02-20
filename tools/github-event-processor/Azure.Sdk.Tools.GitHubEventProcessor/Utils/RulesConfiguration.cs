@@ -60,11 +60,12 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
         {
             if (Rules.ContainsKey(rule))
             {
-                Console.WriteLine($"Rule, {rule}, is {Rules[rule]}.");
                 if (Rules[rule] == RuleState.On)
                 {
+                    Console.WriteLine($"Rule, {rule}, is {Rules[rule]}. Processing...");
                     return true;
                 }
+                Console.WriteLine($"Rule, {rule}, is {Rules[rule]}. Not processing...");
             }
             else
             {

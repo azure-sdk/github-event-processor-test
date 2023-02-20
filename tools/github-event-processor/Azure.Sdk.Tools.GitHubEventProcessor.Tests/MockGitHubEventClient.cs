@@ -37,6 +37,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
 
         public List<string> AILabelServiceReturn { get; set; } = new List<string>();
 
+        public SearchIssuesResult SearchIssuesResultReturn { get; set; } = new SearchIssuesResult();
+
         public MockGitHubEventClient(string productHeaderName, string? rulesConfigLocation = null) : 
             base(productHeaderName, rulesConfigLocation)
         {
@@ -49,7 +51,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
         /// <param name="repositoryId"></param>
         /// <param name="issueOrPullRequestNumber"></param>
         /// <returns></returns>
-        public override Task<int> ProcessPendingUpdates(long repositoryId, int issueOrPullRequestNumber)
+        public override Task<int> ProcessPendingUpdates(long repositoryId, int issueOrPullRequestNumber = 0)
         {
             int numUpdates = 0;
             if (_issueUpdate != null)
@@ -63,11 +65,16 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
             }
             Console.WriteLine($"MockGitHubEventClient::ProcessPendingUpdates, number of pending comments = {_gitHubComments.Count}");
             numUpdates += _gitHubComments.Count;
+
             Console.WriteLine($"MockGitHubEventClient::ProcessPendingUpdates, number of pending dismissals = {_gitHubReviewDismissals.Count}");
             numUpdates += _gitHubReviewDismissals.Count;
 
             Console.WriteLine($"MockGitHubEventClient::ProcessPendingUpdates, number of pending IssueUpdates = {_gitHubIssuesToUpdate.Count}");
             numUpdates += _gitHubIssuesToUpdate.Count;
+
+            Console.WriteLine($"MockGitHubEventClient::ProcessPendingUpdates, number of issues to Lock = {_gitHubIssuesToLock.Count}");
+            numUpdates += _gitHubIssuesToLock.Count;
+
             return Task.FromResult(numUpdates);
         }
 
@@ -106,6 +113,72 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
             return Task.FromResult(UserHasPermissionsReturn);
         }
 
+        /// <summary>
+        /// Mock call that will return a SearchIssuesResult for testing purposes
+        /// </summary>
+        /// <param name="searchIssuesRequest">SearchIssuesRequest objected which contains the search criteria.</param>
+        /// <returns>OctoKit.SearchIssuesResult</returns>
+        public override async Task<SearchIssuesResult> QueryIssues(SearchIssuesRequest searchIssuesRequest)
+        {
+            return await Task.FromResult(SearchIssuesResultReturn);
+        }
+
+        /// <summary>
+        /// Create a bunch of fake issues for QueryIssues to return.
+        /// </summary>
+        /// <param name="numResults">The number of results to create.</param>
+        public void CreateSearchIssuesResult(int numResults, Repository repository, ItemState itemState)
+        {
+            // Empty issues should be okay for the QueryResult. The scheduled events
+            // never look at the returned issues because everything returned already
+            // matches the search criteria. They only thing the rules are doing is
+            // modifying the issues returned.
+            List<Issue> issues = new List<Issue>();
+            for(int iCounter=0;iCounter <numResults;iCounter++)
+            {
+                //
+                User user = CreateFakeUser("FakeUser1");
+                // public Issue(string url, string htmlUrl, string commentsUrl, string eventsUrl, int number, ItemState state, string title, string body, User closedBy, User user, IReadOnlyList<Label> labels, User assignee, IReadOnlyList<User> assignees, Milestone milestone, int comments, PullRequest pullRequest, DateTimeOffset? closedAt, DateTimeOffset createdAt, DateTimeOffset? updatedAt, int id, string nodeId, bool locked, Repository repository, ReactionSummary reactions, LockReason? activeLockReason) 
+                Issue issue = new Issue(
+                    "url",
+                    "htmlUrl",
+                    "commentsUrl",
+                    "eventsUrl",
+                    iCounter,
+                    itemState,
+                    $"title {iCounter}",
+                    $"body {iCounter}",
+                    null,
+                    user,
+                    null,
+                    null,
+                    null,
+                    null,
+                    0,
+                    null,
+                    null,
+                    DateTimeOffset.UtcNow,
+                    null,
+                    iCounter+100,
+                    "",
+                    false,
+                    repository,
+                    null,
+                    null
+                    );
+                issues.Add(issue);
+            }
+            IReadOnlyList<Issue> readOnlyIssues = issues;
+            SearchIssuesResult searchIssuesResult = new SearchIssuesResult(numResults, false, readOnlyIssues);
+            SearchIssuesResultReturn = searchIssuesResult;
+        }
+
+        /// <summary>
+        /// Mock function to get all the reviews for a given pull request.
+        /// </summary>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="pullRequestNumber">The pull request number</param>
+        /// <returns>IReadOnlyList of PullRequestReview</returns>
         public override Task<IReadOnlyList<PullRequestReview>> GetReviewsForPullRequest(long repositoryId, int pullRequestNumber)
         {
             // The return value needs to be an IReadOnlyList and calling PullRequestReviews.AsReadOnly returns
@@ -369,6 +442,17 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
         public List<GitHubIssueToUpdate> GetGitHubIssuesToUpdate()
         {
             return _gitHubIssuesToUpdate;
+        }
+
+        /// <summary>
+        /// Convenience function for testing, get the list of GitHub issues to update. For normal action
+        /// processing this list won't be used as actions make changes to a common IssueUpdate. For scheduled,
+        /// or cron, tasks, those will potentially end up updating multiple, differnt issues.
+        /// </summary>
+        /// <returns>List of GitHubIssueToUpdate</returns>
+        public List<GitHubIssueToLock> GetGitHubIssuesToLock()
+        {
+            return _gitHubIssuesToLock;
         }
     }
 }

@@ -62,7 +62,85 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
             }
             // The second argument is IssueOrPullRequestNumber which isn't applicable to scheduled events (cron tasks)
             // since they're not going to be changing a single IssueUpdate like rules processing does.
-            int numUpdates = await gitHubEventClient.ProcessPendingUpdates(scheduledEventPayload.Repository.Id, 0);
+            int numUpdates = await gitHubEventClient.ProcessPendingUpdates(scheduledEventPayload.Repository.Id);
+        }
+
+        /// <summary>
+        /// Trigger: every 6 hours
+        /// Query Criteria
+        ///     Issue is open
+        ///     Issue has label "issue-addressed"
+        ///     Issue was last updated more than 7 days ago
+        /// Resulting Action:
+        ///     Close the issue
+        ///     Create a comment "Hi @${issueAuthor}, since you haven’t asked that we `/unresolve` the issue, we’ll close this out. If you believe further discussion is needed, please add a comment `/unresolve` to reopen the issue."
+        /// </summary>
+        /// <param name="gitHubEventClient"></param>
+        /// <param name="scheduledEventPayload"></param>
+        /// <returns></returns>
+        public static async Task CloseAddressedIssues(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
+        {
+            if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.CloseAddressedIssues))
+            {
+
+                List<string> includeLabels = new List<string>
+                {
+                    LabelConstants.IssueAddressed
+                };
+                SearchIssuesRequest request = gitHubEventClient.CreateSearchRequest(scheduledEventPayload.Repository.Owner.Login,
+                                                                 scheduledEventPayload.Repository.Name,
+                                                                 IssueTypeQualifier.Issue,
+                                                                 ItemState.Open,
+                                                                 7, // more than 7 days old
+                                                                 null,
+                                                                 includeLabels);
+                // Need to stop updating when the we hit the limit but, until then, after exhausting every
+                // issue in the page returned, the query needs to be rerun to get the next page
+                int numUpdates = 0;
+                // In theory, maximumPage will be 10 since there's 100 results per-page returned by default but
+                // this ensures that if we opt to change the page size
+                int maximumPage = MaxSearchResults / request.PerPage;
+                for (request.Page = 1; request.Page <= maximumPage; request.Page++)
+                {
+                    SearchIssuesResult result = await gitHubEventClient.QueryIssues(request);
+                    int iCounter = 0;
+                    while (
+                        // Process every item in the page returned
+                        iCounter < result.Items.Count &&
+                        // unless the update limit has been hit
+                        numUpdates < ScheduledTaskUpdateLimit
+                        )
+                    {
+                        Issue issue = result.Items[iCounter++];
+                        IssueUpdate issueUpdate = gitHubEventClient.GetIssueUpdate(issue, false);
+                        issueUpdate.State = ItemState.Closed;
+                        gitHubEventClient.AddToIssueUpdateList(scheduledEventPayload.Repository.Id,
+                                                               issue.Number,
+                                                               issueUpdate);
+                        string comment = $"Hi @{issue.User.Login}, since you haven’t asked that we `/unresolve` the issue, we’ll close this out. If you believe further discussion is needed, please add a comment `/unresolve` to reopen the issue.";
+                        gitHubEventClient.CreateComment(scheduledEventPayload.Repository.Id,
+                                                        issue.Number,
+                                                        comment);
+                        // There are 2 updates per result
+                        numUpdates += 2;
+                    }
+
+                    // The number of items in the query isn't known until the query is run.
+                    // If the number of items in the result equals the total number of items matching the query then
+                    // all the items have been processed.
+                    // OR 
+                    // If the number of items in the result is less than the number of items requested per page then
+                    // the last page of results has been processed which was not a full page
+                    // OR
+                    // The number of updates has hit the limit for a scheduled task
+                    if (result.Items.Count == result.TotalCount ||
+                        result.Items.Count < request.PerPage ||
+                        numUpdates >= ScheduledTaskUpdateLimit)
+                    {
+                        break;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -119,6 +197,84 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                                                                issue.Number, 
                                                                issueUpdate);
                         numUpdates++;
+                    }
+
+                    // The number of items in the query isn't known until the query is run.
+                    // If the number of items in the result equals the total number of items matching the query then
+                    // all the items have been processed.
+                    // OR 
+                    // If the number of items in the result is less than the number of items requested per page then
+                    // the last page of results has been processed which was not a full page
+                    // OR
+                    // The number of updates has hit the limit for a scheduled task
+                    if (result.Items.Count == result.TotalCount ||
+                        result.Items.Count < request.PerPage ||
+                        numUpdates >= ScheduledTaskUpdateLimit)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Trigger: every 6 hours
+        /// Query Criteria
+        ///     Pull request is open
+        ///     Pull request has "no-recent-activity" label
+        ///     Pull request was last modified more than 7 days ago
+        /// Resulting Action:
+        ///     Close the pull request
+        ///     Create a comment "Hi @${issueAuthor}.  Thank you for your contribution.  Since there hasn't been recent engagement, we're going to close this out.  Feel free to respond with a comment containing `/reopen` if you'd like to continue working on these changes.  Please be sure to use the command to reopen or remove the `no-recent-activity` label; otherwise, this is likely to be closed again with the next cleanup pass."
+        /// </summary>
+        /// <param name="gitHubEventClient"></param>
+        /// <param name="scheduledEventPayload"></param>
+        /// <returns></returns>
+        public static async Task CloseStalePullRequests(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
+        {
+            if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.CloseStalePullRequests))
+            {
+
+                List<string> includeLabels = new List<string>
+                {
+                    LabelConstants.NoRecentActivity
+                };
+                SearchIssuesRequest request = gitHubEventClient.CreateSearchRequest(scheduledEventPayload.Repository.Owner.Login,
+                                                                 scheduledEventPayload.Repository.Name,
+                                                                 IssueTypeQualifier.PullRequest,
+                                                                 ItemState.Open,
+                                                                 7, // more than 7 days old
+                                                                 null,
+                                                                 includeLabels);
+                // Need to stop updating when the we hit the limit but, until then, after exhausting every
+                // issue in the page returned, the query needs to be rerun to get the next page
+                int numUpdates = 0;
+                // In theory, maximumPage will be 10 since there's 100 results per-page returned by default but
+                // this ensures that if we opt to change the page size
+                int maximumPage = MaxSearchResults / request.PerPage;
+                for (request.Page = 1; request.Page <= maximumPage; request.Page++)
+                {
+                    SearchIssuesResult result = await gitHubEventClient.QueryIssues(request);
+                    int iCounter = 0;
+                    while (
+                        // Process every item in the page returned
+                        iCounter < result.Items.Count &&
+                        // unless the update limit has been hit
+                        numUpdates < ScheduledTaskUpdateLimit
+                        )
+                    {
+                        Issue issue = result.Items[iCounter++];
+                        IssueUpdate issueUpdate = gitHubEventClient.GetIssueUpdate(issue, false);
+                        issueUpdate.State = ItemState.Closed;
+                        gitHubEventClient.AddToIssueUpdateList(scheduledEventPayload.Repository.Id,
+                                                               issue.Number,
+                                                               issueUpdate);
+                        string comment = $"Hi @{issue.User.Login}.  Thank you for your contribution.  Since there hasn't been recent engagement, we're going to close this out.  Feel free to respond with a comment containing `/reopen` if you'd like to continue working on these changes.  Please be sure to use the command to reopen or remove the `no-recent-activity` label; otherwise, this is likely to be closed again with the next cleanup pass.";
+                        gitHubEventClient.CreateComment(scheduledEventPayload.Repository.Id,
+                                                        issue.Number,
+                                                        comment);
+                        // There are 2 updates per result
+                        numUpdates += 2;
                     }
 
                     // The number of items in the query isn't known until the query is run.
@@ -278,162 +434,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                                                                issue.Number,
                                                                issueUpdate);
                         string comment = $"Hi @{issue.User.Login}, we're sending this friendly reminder because we haven't heard back from you in **7 days**. We need more information about this issue to help address it. Please be sure to give us your input. If we don't hear back from you within **14 days** of this comment the issue will be automatically closed. Thank you!";
-                        gitHubEventClient.CreateComment(scheduledEventPayload.Repository.Id,
-                                                        issue.Number,
-                                                        comment);
-                        // There are 2 updates per result
-                        numUpdates += 2;
-                    }
-
-                    // The number of items in the query isn't known until the query is run.
-                    // If the number of items in the result equals the total number of items matching the query then
-                    // all the items have been processed.
-                    // OR 
-                    // If the number of items in the result is less than the number of items requested per page then
-                    // the last page of results has been processed which was not a full page
-                    // OR
-                    // The number of updates has hit the limit for a scheduled task
-                    if (result.Items.Count == result.TotalCount ||
-                        result.Items.Count < request.PerPage ||
-                        numUpdates >= ScheduledTaskUpdateLimit)
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Trigger: every 6 hours
-        /// Query Criteria
-        ///     Pull request is open
-        ///     Pull request has "no-recent-activity" label
-        ///     Pull request was last modified more than 7 days ago
-        /// Resulting Action:
-        ///     Close the pull request
-        ///     Create a comment "Hi @${issueAuthor}.  Thank you for your contribution.  Since there hasn't been recent engagement, we're going to close this out.  Feel free to respond with a comment containing `/reopen` if you'd like to continue working on these changes.  Please be sure to use the command to reopen or remove the `no-recent-activity` label; otherwise, this is likely to be closed again with the next cleanup pass."
-        /// </summary>
-        /// <param name="gitHubEventClient"></param>
-        /// <param name="scheduledEventPayload"></param>
-        /// <returns></returns>
-        public static async Task CloseStalePullRequests(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
-        {
-            if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.CloseStalePullRequests))
-            {
-
-                List<string> includeLabels = new List<string>
-                {
-                    LabelConstants.NoRecentActivity
-                };
-                SearchIssuesRequest request = gitHubEventClient.CreateSearchRequest(scheduledEventPayload.Repository.Owner.Login,
-                                                                 scheduledEventPayload.Repository.Name,
-                                                                 IssueTypeQualifier.PullRequest,
-                                                                 ItemState.Open,
-                                                                 7, // more than 7 days old
-                                                                 null,
-                                                                 includeLabels);
-                // Need to stop updating when the we hit the limit but, until then, after exhausting every
-                // issue in the page returned, the query needs to be rerun to get the next page
-                int numUpdates = 0;
-                // In theory, maximumPage will be 10 since there's 100 results per-page returned by default but
-                // this ensures that if we opt to change the page size
-                int maximumPage = MaxSearchResults / request.PerPage;
-                for (request.Page = 1; request.Page <= maximumPage; request.Page++)
-                {
-                    SearchIssuesResult result = await gitHubEventClient.QueryIssues(request);
-                    int iCounter = 0;
-                    while (
-                        // Process every item in the page returned
-                        iCounter < result.Items.Count &&
-                        // unless the update limit has been hit
-                        numUpdates < ScheduledTaskUpdateLimit
-                        )
-                    {
-                        Issue issue = result.Items[iCounter++];
-                        IssueUpdate issueUpdate = gitHubEventClient.GetIssueUpdate(issue, false);
-                        issueUpdate.State = ItemState.Closed;
-                        gitHubEventClient.AddToIssueUpdateList(scheduledEventPayload.Repository.Id,
-                                                               issue.Number,
-                                                               issueUpdate);
-                        string comment = $"Hi @{issue.User.Login}.  Thank you for your contribution.  Since there hasn't been recent engagement, we're going to close this out.  Feel free to respond with a comment containing `/reopen` if you'd like to continue working on these changes.  Please be sure to use the command to reopen or remove the `no-recent-activity` label; otherwise, this is likely to be closed again with the next cleanup pass.";
-                        gitHubEventClient.CreateComment(scheduledEventPayload.Repository.Id,
-                                                        issue.Number,
-                                                        comment);
-                        // There are 2 updates per result
-                        numUpdates += 2;
-                    }
-
-                    // The number of items in the query isn't known until the query is run.
-                    // If the number of items in the result equals the total number of items matching the query then
-                    // all the items have been processed.
-                    // OR 
-                    // If the number of items in the result is less than the number of items requested per page then
-                    // the last page of results has been processed which was not a full page
-                    // OR
-                    // The number of updates has hit the limit for a scheduled task
-                    if (result.Items.Count == result.TotalCount ||
-                        result.Items.Count < request.PerPage ||
-                        numUpdates >= ScheduledTaskUpdateLimit)
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Trigger: every 6 hours
-        /// Query Criteria
-        ///     Issue is open
-        ///     Issue has label "issue-addressed"
-        ///     Issue was last updated more than 7 days ago
-        /// Resulting Action:
-        ///     Close the issue
-        ///     Create a comment "Hi @${issueAuthor}, since you haven’t asked that we `/unresolve` the issue, we’ll close this out. If you believe further discussion is needed, please add a comment `/unresolve` to reopen the issue."
-        /// </summary>
-        /// <param name="gitHubEventClient"></param>
-        /// <param name="scheduledEventPayload"></param>
-        /// <returns></returns>
-        public static async Task CloseAddressedIssues(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
-        {
-            if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.CloseAddressedIssues))
-            {
-
-                List<string> includeLabels = new List<string>
-                {
-                    LabelConstants.IssueAddressed
-                };
-                SearchIssuesRequest request = gitHubEventClient.CreateSearchRequest(scheduledEventPayload.Repository.Owner.Login,
-                                                                 scheduledEventPayload.Repository.Name,
-                                                                 IssueTypeQualifier.Issue,
-                                                                 ItemState.Open,
-                                                                 7, // more than 7 days old
-                                                                 null,
-                                                                 includeLabels);
-                // Need to stop updating when the we hit the limit but, until then, after exhausting every
-                // issue in the page returned, the query needs to be rerun to get the next page
-                int numUpdates = 0;
-                // In theory, maximumPage will be 10 since there's 100 results per-page returned by default but
-                // this ensures that if we opt to change the page size
-                int maximumPage = MaxSearchResults / request.PerPage;
-                for (request.Page = 1; request.Page <= maximumPage; request.Page++)
-                {
-                    SearchIssuesResult result = await gitHubEventClient.QueryIssues(request);
-                    int iCounter = 0;
-                    while (
-                        // Process every item in the page returned
-                        iCounter < result.Items.Count &&
-                        // unless the update limit has been hit
-                        numUpdates < ScheduledTaskUpdateLimit
-                        )
-                    {
-                        Issue issue = result.Items[iCounter++];
-                        IssueUpdate issueUpdate = gitHubEventClient.GetIssueUpdate(issue, false);
-                        issueUpdate.State = ItemState.Closed;
-                        gitHubEventClient.AddToIssueUpdateList(scheduledEventPayload.Repository.Id,
-                                                               issue.Number,
-                                                               issueUpdate);
-                        string comment = $"Hi @{issue.User.Login}, since you haven’t asked that we `/unresolve` the issue, we’ll close this out. If you believe further discussion is needed, please add a comment `/unresolve` to reopen the issue.";
                         gitHubEventClient.CreateComment(scheduledEventPayload.Repository.Id,
                                                         issue.Number,
                                                         comment);

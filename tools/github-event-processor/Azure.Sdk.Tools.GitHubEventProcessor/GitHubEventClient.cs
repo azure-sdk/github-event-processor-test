@@ -122,9 +122,9 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// 3. Removed Dismissals
         /// </summary>
         /// <param name="repositoryId">The Id of the repository</param>
-        /// <param name="issueOrPullRequestNumber">The Issue or PullRequest number</param>
+        /// <param name="issueOrPullRequestNumber">The Issue or PullRequest number if not processing a scheduled task.</param>
         /// <returns>Integer, the number of update calls made</returns>
-        public virtual async Task<int> ProcessPendingUpdates(long repositoryId, int issueOrPullRequestNumber)
+        public virtual async Task<int> ProcessPendingUpdates(long repositoryId, int issueOrPullRequestNumber = 0)
         {
             int numUpdates = 0;
 
@@ -358,7 +358,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// </summary>
         /// <param name="repositoryId">The Id of the repository</param>
         /// <param name="pullRequestNumber">The pull request number</param>
-        /// <returns></returns>
+        /// <returns>IReadOnlyList of PullRequestReview</returns>
         public virtual async Task<IReadOnlyList<PullRequestReview>> GetReviewsForPullRequest(long repositoryId, int pullRequestNumber)
         {
             return await _gitHubClient.PullRequest.Review.GetAll(repositoryId, pullRequestNumber);
@@ -580,7 +580,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// results and so on.
         /// </summary>
         /// <param name="searchIssuesRequest">SearchIssuesRequest objected which contains the search criteria.</param>
-        /// <returns></returns>
+        /// <returns>OctoKit.SearchIssuesResult</returns>
         public virtual async Task<SearchIssuesResult> QueryIssues(SearchIssuesRequest searchIssuesRequest)
         {
             var searchIssueResult = await _gitHubClient.Search.SearchIssues(searchIssuesRequest);

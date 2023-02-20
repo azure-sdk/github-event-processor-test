@@ -21,7 +21,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// Every rule will have it's own function that will be called here.
         /// </summary>
         /// <param name="gitHubEventClient"></param>
-        /// <param name="rawJson"></param>
+        /// <param name="issueEventPayload">IssueEventGitHubPayload</param>
         /// <returns></returns>
         public static async Task ProcessIssueEvent(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
