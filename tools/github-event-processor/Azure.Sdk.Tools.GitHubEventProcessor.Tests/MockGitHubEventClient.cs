@@ -9,6 +9,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Azure.Sdk.Tools.GitHubEventProcessor;
 using Azure.Sdk.Tools.GitHubEventProcessor.Constants;
+using Azure.Sdk.Tools.GitHubEventProcessor.GitHubPayload;
 using Azure.Sdk.Tools.GitHubEventProcessor.Utils;
 using Octokit;
 
@@ -33,6 +34,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
 
         public List<PullRequestReview> PullRequestReviews { get; set; } = new List<PullRequestReview>();
         public List<PullRequestFile> PullRequestFiles { get; set; } = new List<PullRequestFile>();
+
+        public List<string> AILabelServiceReturn { get; set; } = new List<string>();
 
         public MockGitHubEventClient(string productHeaderName, string? rulesConfigLocation = null) : 
             base(productHeaderName, rulesConfigLocation)
@@ -318,6 +321,15 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests
                 rulesConfiguration.CreateDefaultConfig(RuleState.On);
             }
             return rulesConfiguration;
+        }
+
+        // The mock won't be calling the actual service and since the method it's overriding is
+        // async, the warning needs to be disabled.
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public override async Task<List<string>> QueryAILabelService(IssueEventGitHubPayload issueEventPayload)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            return AILabelServiceReturn;
         }
 
         /// <summary>

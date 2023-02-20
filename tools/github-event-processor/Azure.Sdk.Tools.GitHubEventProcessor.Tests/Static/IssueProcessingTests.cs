@@ -15,7 +15,72 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
     [Parallelizable(ParallelScope.Children)]
     public class IssueProcessingTests : ProcessingTestBase
     {
-        // JRS-TBD InitialIssueTriage test after the rule is finished. It's waiting on the AI service.
+        /// <summary>
+        /// TBD: InitialIssueTriage rule is not yet complete as it requires a CODEOWNERS overhaul that is not complete.
+        /// The payload for this rule to process requires an issues opened event with no assignee and no labels.
+        /// Until the CODEOWNERS changes are complete, processing is as follows:
+        /// Trigger: issues opened
+        /// Conditions: Issue has no assignee
+        ///             Issue has no labels
+        /// Resulting Action:Query the AI Service
+        ///     If the AI Service 
+        /// </summary>
+        /// <param name="rule"></param>
+        /// <param name="payloadFile"></param>
+        /// <param name="ruleState"></param>
+        /// <param name="AIServiceReturnsLabels"></param>
+        /// <returns></returns>
+        [TestCase(RulesConstants.InitialIssueTriage, "Tests.JsonEventPayloads/InitialIssueTriage_issue_opened_no_labels_no_assignee.json", RuleState.On, true)]
+        [TestCase(RulesConstants.InitialIssueTriage, "Tests.JsonEventPayloads/InitialIssueTriage_issue_opened_no_labels_no_assignee.json", RuleState.On, false)]
+        [TestCase(RulesConstants.InitialIssueTriage, "Tests.JsonEventPayloads/InitialIssueTriage_issue_opened_no_labels_no_assignee.json", RuleState.Off, false)]
+        public async Task TestInitialIssueTriage(string rule, string payloadFile, RuleState ruleState, bool AIServiceReturnsLabels)
+        {
+            var mockGitHubEventClient = new MockGitHubEventClient(OrgConstants.ProductHeaderName);
+            mockGitHubEventClient.RulesConfiguration.Rules[rule] = ruleState;
+            var rawJson = TestHelpers.GetTestEventPayload(payloadFile);
+            var issueEventPayload = SimpleJsonSerializer.Deserialize<IssueEventGitHubPayload>(rawJson);
+            List<string> expectedLabels = new List<string>
+                {
+                    "FakeLabel1",
+                    "FakeLabel2"
+                };
+
+            if (AIServiceReturnsLabels)
+            {
+                foreach (string label in expectedLabels)
+                {
+                    mockGitHubEventClient.AILabelServiceReturn.Add(label);
+                }
+            }
+            await IssueProcessing.InitialIssueTriage(mockGitHubEventClient, issueEventPayload);
+            var totalUpdates = await mockGitHubEventClient.ProcessPendingUpdates(issueEventPayload.Repository.Id, issueEventPayload.Issue.Number);
+            // Verify the RuleCheck 
+            Assert.AreEqual(ruleState == RuleState.On, mockGitHubEventClient.RulesConfiguration.RuleEnabled(rule), $"Rule '{rule}' enabled should have been {ruleState == RuleState.On} but RuleEnabled returned {ruleState != RuleState.On}.'");
+            if (RuleState.On == ruleState)
+            {
+                Assert.AreEqual(1, totalUpdates, $"The number of updates should have been 1 but was instead, {totalUpdates}");
+                // Retrieve the IssueUpdate and verify the expected changes
+                var issueUpdate = mockGitHubEventClient.GetIssueUpdate();
+                if (AIServiceReturnsLabels)
+                {
+                    Assert.True(issueUpdate.Labels.Contains(LabelConstants.NeedsTeamTriage), $"IssueUpdate does not contain {LabelConstants.NeedsTeamTriage} which should have been added when labels were predicted.");
+                    // Verify the labels returned by the AI service
+                    foreach (string label in expectedLabels)
+                    {
+                        Assert.True(issueUpdate.Labels.Contains(label), $"IssueUpdate does not contain {label} which was returned by the AI service and should have been added.");
+                    }
+                }
+                else
+                {
+                    // If the AI Label service doesn't predict labels, the label added is NeedsTriage
+                    Assert.True(issueUpdate.Labels.Contains(LabelConstants.NeedsTriage), $"IssueUpdate does not contain {LabelConstants.NeedsTriage} which should have been added when no labels were predicted.");
+                }
+            }
+            else
+            {
+                Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
+            }
+        }
 
         /// <summary>
         /// ManualIssueTriage requires 2 labeled event payloads to test. 
@@ -70,7 +135,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             {
                 Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
             }
-            return;
         }
 
         /// <summary>
@@ -132,7 +196,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             {
                 Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
             }
-            return;
         }
 
 
@@ -189,7 +252,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             {
                 Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
             }
-            return;
         }
 
         /// <summary>
@@ -245,7 +307,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             {
                 Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
             }
-            return;
         }
 
         /// <summary>
@@ -291,7 +352,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             {
                 Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
             }
-            return;
         }
 
         /// <summary>
@@ -343,7 +403,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             {
                 Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
             }
-            return;
         }
 
         /// <summary>
@@ -402,7 +461,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             {
                 Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
             }
-            return;
         }
 
         /// <summary>
@@ -473,7 +531,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             {
                 Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
             }
-            return;
         }
 
         /// <summary>
@@ -530,7 +587,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
             {
                 Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
             }
-            return;
         }
     }
 }

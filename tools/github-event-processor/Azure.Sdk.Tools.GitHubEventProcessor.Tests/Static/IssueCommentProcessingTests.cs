@@ -59,7 +59,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 Assert.AreEqual(0, numComments, $"{rule} is {ruleState} and should not have created any comments but {numComments} comments were created.");
                 Assert.IsNull(mockGitHubEventClient.GetIssueUpdate(), $"{rule} is {ruleState} and should not have produced an IssueUpdate.");
             }
-            return;
         }
 
         /// <summary>
@@ -101,7 +100,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 Assert.AreEqual(0, totalUpdates, $"The number of updates should have been 0 but was instead, {totalUpdates}");
                 Assert.IsNull(mockGitHubEventClient.GetIssueUpdate(), $"{rule} is {ruleState} and should not have produced an IssueUpdate.");
             }
-            return;
         }
 
         /// <summary>
@@ -150,7 +148,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 Assert.AreEqual(0, totalUpdates, $"The number of updates should have been 0 but was instead, {totalUpdates}");
                 Assert.IsNull(mockGitHubEventClient.GetIssueUpdate(), $"{rule} is {ruleState} and should not have produced an IssueUpdate.");
             }
-            return;
         }
 
         /// <summary>
@@ -195,7 +192,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 Assert.AreEqual(0, numComments, $"{rule} is {ruleState} and should not have created any comments but {numComments} comments were created.");
                 Assert.IsNull(mockGitHubEventClient.GetIssueUpdate(), $"{rule} is {ruleState} and should not have produced an IssueUpdate.");
             }
-            return;
         }
 
         /// <summary>
@@ -249,7 +245,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 Assert.AreEqual(0, totalUpdates, $"The number of updates should have been 0 but was instead, {totalUpdates}");
                 Assert.IsNull(mockGitHubEventClient.GetIssueUpdate(), $"{rule} is {ruleState} and should not have produced an IssueUpdate.");
             }
-            return;
         }
 
         /// <summary>
@@ -300,7 +295,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 Assert.AreEqual(1, numComments, $"Without admin or write permissions, 1 comment should have been created but {numComments} comments were created.");
                 Assert.IsNull(mockGitHubEventClient.GetIssueUpdate(), $"Without admin or write permissions there should not be an IssueUpdate.");
             }
-            return;
         }
     }
 }

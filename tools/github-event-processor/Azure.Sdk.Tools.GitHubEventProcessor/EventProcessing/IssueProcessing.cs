@@ -108,6 +108,9 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
 
                         // 
 
+                        // This is a stop-gap. To do what is above, we need CODEOWNERS changes which don't exist yet.
+                        // For the moment, if there are no label suggestions add needs-triage and if there
+                        // are, add them and then add needs-team-triage
                         List<string> labelSuggestions = await gitHubEventClient.QueryAILabelService(issueEventPayload);
                         IssueUpdate issueUpdate = gitHubEventClient.GetIssueUpdate(issueEventPayload.Issue);
                         if (labelSuggestions.Count > 0 )

@@ -65,7 +65,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 Assert.AreEqual(0, totalUpdates, $"The number of updates should have been 0 but was instead, {totalUpdates}");
                 Assert.IsNull(mockGitHubEventClient.GetIssueUpdate(), $"{rule} is {ruleState} and should not have produced an IssueUpdate.");
             }
-            return;
         }
 
         /// <summary>
@@ -126,7 +125,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 Assert.AreEqual(0, totalUpdates, $"{rule} is {ruleState} and should not have produced any updates.");
                 Assert.IsNull(mockGitHubEventClient.GetIssueUpdate(), $"{rule} is {ruleState} and should not have produced an IssueUpdate.");
             }
-            return;
         }
     }
 }
