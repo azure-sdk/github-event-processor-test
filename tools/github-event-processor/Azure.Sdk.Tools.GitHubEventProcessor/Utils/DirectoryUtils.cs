@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
 {
+    /// <summary>
+    /// Utility used to ascent to the repository root and, from there, find the location
+    /// of a given file. If a subdirectory hint is given look in there.
+    /// </summary>
     public class DirectoryUtils
     {
         internal class DirectoryEvaluation
@@ -80,11 +84,30 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
                 if (files.Count == 1)
                 {
                     return files[0];
+                } 
+                else
+                {
+                    string message = $"File {fileName} exists in several locations and which one to load cannot be determined.";
+                    if (null != subdir)
+                    {
+                        message = message + $" Subdirectory hint was {subdir}.";
+                    }
+                    Console.WriteLine(message);
+                    foreach(string file in files)
+                    {
+                        Console.WriteLine(file);
+                    }
+                    return null;
                 }
-            } 
+            }
             else
             {
-                // JRS - need to error here
+                string message = $"Unable to determine the location of {fileName} within the repository.";
+                if (null != subdir)
+                {
+                    message = message + $" Subdirectory hint was {subdir}.";
+                }
+                Console.WriteLine(message);
             }
             return null;
         }

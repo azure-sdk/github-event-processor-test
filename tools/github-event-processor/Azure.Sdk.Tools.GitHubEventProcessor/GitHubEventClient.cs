@@ -655,10 +655,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
 
         public virtual async Task<List<string>> QueryAILabelService(IssueEventGitHubPayload issueEventPayload)
         {
-            // Need to query the keyvault to get the key
-            // https://ms.portal.azure.com/#view/WebsitesExtension/FunctionMenuBlade/~/functionKeys/resourceId/%2Fsubscriptions%2Fa18897a6-7e44-457d-9260-f2854c0aca42%2FresourceGroups%2Fissue-labeler%2Fproviders%2FMicrosoft.Web%2Fsites%2Fissuelabeler%2Ffunctions%2FAzureSdkIssueLabelerService
-            // JRS - Wes and Ben are looking at the KV access and whatnot and for the AIServiceKey, I should be expecting an environment
-            // variable with this value in it.
+            // The LABEL_SERVICE_API_KEY is queried from Keyvault as part of the action and added to the
+            // environment.
             string AIServiceKey = Environment.GetEnvironmentVariable("LABEL_SERVICE_API_KEY");
             if (string.IsNullOrEmpty(AIServiceKey))
             {
@@ -691,8 +689,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     var suggestions = await response.Content.ReadFromJsonAsync<LabelResponse>().ConfigureAwait(false);
-                    // JRS-Remove
-                    Console.WriteLine($"The AI Label returned successfully.");
                     returnList = new List<string>(suggestions.Labels);
                 }
                 else
