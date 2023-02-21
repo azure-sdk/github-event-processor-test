@@ -10,7 +10,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
 {
     public class CodeOwnerUtils
     {
-        static List<CodeOwnerEntry> _codeOwnerEntries = null;
+        static List<CodeownersEntry> _codeOwnerEntries = null;
         public static string codeOwnersFilePathOverride = null;
 
         public static string GetCodeOwnersFilePath()
@@ -31,13 +31,13 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
         /// times if there's more than one call to get CodeOwnerEntries for information.
         /// </summary>
         /// <returns></returns>
-        public static List<CodeOwnerEntry> GetCodeOwnerEntries()
+        public static List<CodeownersEntry> GetCodeOwnerEntries()
         {
             if (_codeOwnerEntries == null)
             {
                 string codeOwnersFilePath = GetCodeOwnersFilePath();
                 Console.WriteLine($"Loading codeowners file, {codeOwnersFilePath}");
-                _codeOwnerEntries = CodeOwnersFile.ParseFile(codeOwnersFilePath);
+                _codeOwnerEntries = CodeownersFile.GetCodeownersEntriesFromFileOrUrl(codeOwnersFilePath);
             }
             return _codeOwnerEntries;
         }
@@ -72,7 +72,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Utils
 
             foreach (var prFile in prFiles)
             {
-                var codeOwnerEntry = CodeOwnersFile.FindOwnersForClosestMatch(codeOwnerEntries, prFile.FileName);
+                var codeOwnerEntry = CodeownersFile.GetMatchingCodeownersEntry(prFile.FileName, codeOwnerEntries);
                 foreach (var prLabel in codeOwnerEntry.PRLabels)
                 {
                     // If PR doesn't already has the label and the label isn't already in the return list

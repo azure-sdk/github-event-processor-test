@@ -2,7 +2,7 @@
   "action": "edited",
   "changes": {
     "title": {
-      "from": "This is a second new issue, with lables on create"
+      "from": "This is a second new issue, with labels on create"
     }
   },
   "issue": {

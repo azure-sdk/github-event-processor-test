@@ -98,7 +98,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 }
                 else
                 {
-                    // Without Admin or Write permissions there should be two additional lables and a comment added
+                    // Without Admin or Write permissions there should be two additional labels and a comment added
                     Assert.True(issueUpdate.Labels.Contains(LabelConstants.CustomerReported), $"User does not have write or admin permission, IssueUpdate should contain {LabelConstants.CustomerReported}.");
                     Assert.True(issueUpdate.Labels.Contains(LabelConstants.CommunityContribution), $"User does not have write or admin permission, IssueUpdate should contain {LabelConstants.CommunityContribution}.");
                     Assert.AreEqual(1, mockGitHubEventClient.GetComments().Count, "Without admin or write permission there should have been a comment added.");

@@ -419,7 +419,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
         /// <param name="rule">String, RulesConstants for the rule being tested</param>
         /// <param name="payloadFile">JSon payload file for the event being tested</param>
         /// <param name="ruleState">Whether or not the rule is on/off</param>
-        /// <param name="hasLabelsToRemove">Whether or not the payload Issue contains the lables that are being removed</param>
+        /// <param name="hasLabelsToRemove">Whether or not the payload Issue contains the labels that are being removed</param>
         /// <returns></returns>
         [TestCase(RulesConstants.AuthorFeedbackNeeded, "Tests.JsonEventPayloads/AuthorFeedbackNeeded_issue_labeled_with_labels_to_remove.json", RuleState.Off, true)]
         [TestCase(RulesConstants.AuthorFeedbackNeeded, "Tests.JsonEventPayloads/AuthorFeedbackNeeded_issue_labeled_with_labels_to_remove.json", RuleState.On, true)]
@@ -480,7 +480,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
         /// <param name="rule">String, RulesConstants for the rule being tested</param>
         /// <param name="payloadFile">JSon payload file for the event being tested</param>
         /// <param name="ruleState">Whether or not the rule is on/off</param>
-        /// <param name="hasLabelsToRemove">Whether or not the payload Issue contains the lables that are being removed</param>
+        /// <param name="hasLabelsToRemove">Whether or not the payload Issue contains the labels that are being removed</param>
         /// <returns></returns>
         [TestCase(RulesConstants.IssueAddressed, "Tests.JsonEventPayloads/IssueAddressed_issue_labeled_with_labels_to_remove.json", RuleState.Off, true)]
         [TestCase(RulesConstants.IssueAddressed, "Tests.JsonEventPayloads/IssueAddressed_issue_labeled_with_labels_to_remove.json", RuleState.On, true)]
@@ -502,7 +502,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 // If the label being added is NeedsTriage, there should be no updates
                 if (!hasLabelsToRemove)
                 {
-                    Assert.AreEqual(1, totalUpdates, $"With none of the lables to remove being on the Issue, there should still be 1 update from an added comment.");
+                    Assert.AreEqual(1, totalUpdates, $"With none of the labels to remove being on the Issue, there should still be 1 update from an added comment.");
                 }
                 else
                 {
@@ -524,7 +524,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                     // Verify that NoRecentActivity was removed
                     Assert.False(issueUpdate.Labels.Contains(LabelConstants.NoRecentActivity), $"IssueUpdate contains {LabelConstants.NoRecentActivity} label which should have been removed.");
                 }
-                // Regardless of whether or not there were lables to remove, a single comment should be created.
+                // Regardless of whether or not there were labels to remove, a single comment should be created.
                 Assert.AreEqual(1, mockGitHubEventClient.GetComments().Count, $"{rule} should have produced a single comment.");
             }
             else
