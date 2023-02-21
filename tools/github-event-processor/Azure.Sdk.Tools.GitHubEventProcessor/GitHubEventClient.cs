@@ -691,6 +691,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     var suggestions = await response.Content.ReadFromJsonAsync<LabelResponse>().ConfigureAwait(false);
+                    // JRS-Remove
+                    Console.WriteLine($"The AI Label returned successfully.");
                     returnList = new List<string>(suggestions.Labels);
                 }
                 else
