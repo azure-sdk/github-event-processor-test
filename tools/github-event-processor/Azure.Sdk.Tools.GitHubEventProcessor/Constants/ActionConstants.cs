@@ -4,8 +4,12 @@ using System.Text;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor.Constants
 {
-    // In theory, we should be using Octokit's EventInfoState however it seems to lack
-    // the opened state...no, really.
+    /// <summary>
+    /// Action constants for github actions. These match the activity types for events defined in the
+    /// github docs https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows.
+    /// Some activities belong to multiple events, for example issues and pull_requests both have an
+    /// opened event.
+    /// </summary>
     public class ActionConstants
     {
         public static readonly string Assigned = "assigned";

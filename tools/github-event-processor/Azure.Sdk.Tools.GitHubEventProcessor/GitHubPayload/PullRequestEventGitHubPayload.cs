@@ -7,9 +7,13 @@ using Octokit;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor.GitHubPayload
 {
-    // In theory, we should be using deserializing the GitHubAction Payload Event into
-    // Octokit's PullRequestEventPayload but it's missing the Label which we need for the
-    // Labeled/Unlabeled PullRequest github action events.
+    /// <summary>
+    /// Class used to deserialize PullRequest event payloads. The reason why Octokit's PullRequestEventPayload
+    /// can't be used directly is because it's missing the Label which necessary to know the label added/removed
+    /// for the labeled/unlabeled events. This class uses the existing Octokit classes as well as Octokit's
+    /// SimpleJsonSerializer for deserialization. The other anomaly here is the AutoMergeEnabled which requires
+    /// special processing to set.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class PullRequestEventGitHubPayload : ActivityPayload
     {

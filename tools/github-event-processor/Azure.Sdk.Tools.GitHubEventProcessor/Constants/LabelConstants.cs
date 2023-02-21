@@ -5,7 +5,11 @@ using System.Text;
 namespace Azure.Sdk.Tools.GitHubEventProcessor.Constants
 {
 
-    // Common Label constants. No repository specific team labels belong in here.
+    /// <summary>
+    /// These are label constants that are common to all language repositories and ones
+    /// that the rules use for processing. No team, or lanaguage, specific labels belong
+    /// in here.
+    /// </summary>
     public class LabelConstants
     {
         public static readonly string CommunityContribution = "Community Contribution";

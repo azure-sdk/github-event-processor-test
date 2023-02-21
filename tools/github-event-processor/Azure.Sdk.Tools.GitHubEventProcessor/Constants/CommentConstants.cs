@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor.Constants
 {
+    /// <summary>
+    /// Strings in comments that cause actions to be included/excluded from processing.
+    /// </summary>
     public class CommentConstants
     {
         // /azp <command> does things like prepares new pipelines or kicks off pipelines and should

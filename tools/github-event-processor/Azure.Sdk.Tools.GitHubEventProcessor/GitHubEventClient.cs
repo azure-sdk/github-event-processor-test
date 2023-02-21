@@ -10,12 +10,22 @@ using Octokit;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor
 {
-    // Class to store the GitHubClient and Rules instances.
-    // This class will also store any updates that are the result of rules or cron task processing.
-    // All updates will be processed at the end of rules or cron task processing.
+    /// <summary>
+    /// GitHubEventClient is a singleton. It holds the GitHubClient, Rules and Codeowner instances as well
+    /// as any updates queued during event processing. After all the relevant rules have been processed, 
+    /// a call to ProcessPendingUpdates will process all of the pending updates. This ensures that the 
+    /// individual rules don't need to deal with calls to GitHub and the respective error processing, 
+    /// within the rules, themselves.
+    /// </summary>
     public class GitHubEventClient
     {
+        // Exception string partial from the call to GitHubClient.Repository.Collaborator.ReviewPermission
+        // used to determine if the call threw because the user being checked was a bot or didn't exist.
         private static readonly string NotAUserPartial = "is not a user";
+
+        /// <summary>
+        /// Class to store the information needed to create a GitHub Comment on an Issue or PullRequest.
+        /// </summary>
         public class GitHubComment
         {
             private long _repositoryId;
@@ -34,6 +44,9 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             }
         }
 
+        /// <summary>
+        /// Class to store the information needed to dismiss a PullRequest review 
+        /// </summary>
         public class GitHubReviewDismissal
         {
             private long _repositoryId;
@@ -55,6 +68,9 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             }
         }
 
+        /// <summary>
+        /// Class to store the information needed to lock an Issue
+        /// </summary>
         public class GitHubIssueToLock
         {
             private long _repositoryId;
@@ -73,6 +89,10 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             }
         }
 
+        /// <summary>
+        /// Used by scheduled/cron event processing which processes multiple Issues or PullRequests. This
+        /// stores the IssueUpdate and the information necessary to update the Issue or PullRequest.
+        /// </summary>
         public class GitHubIssueToUpdate
         {
             private long _repositoryId;
@@ -392,7 +412,9 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// Scheduled events will process multiple issue update. This function adds them to
         /// list of IssueUpdates that will get processed with the pending updates.
         /// </summary>
-        /// <param name="issueUpdate"></param>
+        /// <param name="repositoryId">Repository Id of the Issue or PullRequest</param>
+        /// <param name="issueOrPRNumber">Issue or PullRequest number being updated</param>
+        /// <param name="issueUpdate">The modified IssueUpdate</param>
         public void AddToIssueUpdateList(long repositoryId, int issueOrPRNumber, IssueUpdate issueUpdate)
         {
             GitHubIssueToUpdate gitHubIssueToUpdate = new GitHubIssueToUpdate(repositoryId, issueOrPRNumber, issueUpdate);

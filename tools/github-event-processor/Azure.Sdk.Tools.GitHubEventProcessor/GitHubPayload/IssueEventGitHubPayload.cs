@@ -6,9 +6,12 @@ using Octokit;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor.GitHubPayload
 {
-    // In theory, we should be using deserializing the GitHubAction Payload Event into
-    // Octokit's IssueEventPayload but it's missing the Label which we need for the
-    // Labeled/Unlabeled Issue github action events.
+    /// <summary>
+    /// Class used to deserialize Issue event payloads. The reason why Octokit's IssueEventPayload
+    /// can't be used directly is because it's missing the Label which necessary to know the label
+    /// added/removed for the labeled/unlabeled events. This class uses the existing Octokit classes
+    /// as well as Octokit's SimpleJsonSerializer for deserialization.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class IssueEventGitHubPayload : ActivityPayload
     {

@@ -12,14 +12,19 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
 {
     public class PullRequestCommentProcessing
     {
+        /// <summary>
+        /// PullRequest rules can be found on the gist, https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#pull-request-rules
+        /// Every rule will have it's own function that will be called here, the rule configuration will determine
+        /// which rules will execute.
+        /// It's worth noting here that Issue and PullRequest comments are the same event payload, IssueCommentPayload.
+        /// The different between the two is whether or not the IssueCommentPayload.Issue.PullRequest is null. This
+        /// is the way github differentiates these.
+        /// </summary>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="prCommentPayload">IssueCommentPayload deserialized from the json event payload</param>
+        /// <returns></returns>
         public static async Task ProcessPullRequestCommentEvent(GitHubEventClient gitHubEventClient, IssueCommentPayload prCommentPayload)
         {
-            // If the Issue Comment isn't a PullRequest Comment
-            if (prCommentPayload.Issue.PullRequest == null) 
-            {
-                return;
-            }
-
             await ResetPullRequestActivity(gitHubEventClient, prCommentPayload);
             await ReopenPullRequest(gitHubEventClient, prCommentPayload);
 
@@ -41,9 +46,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///     the cron task wasn't executed with secrets.GITHUB_TOKEN (aka someone ran
         ///     the task from their own personal token.)
         /// </summary>
-        /// <param name="gitHubClient">Authenticated GitHubClient</param>
-        /// <param name="prCommentPayload">Pull Request Comment event payload</param>
-        /// <param name="issueUpdate">The issue update object</param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="prCommentPayload">IssueCommentPayload deserialized from the json event payload</param>
         /// <returns></returns>
         public static async Task ResetPullRequestActivity(GitHubEventClient gitHubEventClient,
                                                           IssueCommentPayload prCommentPayload)
@@ -102,9 +106,9 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///     else
         ///         Create a comment: "Sorry, @commenter, only the original author can reopen this pull request."
         /// </summary>
-        /// <param name="gitHubEventClient"></param>
-        /// <param name="prCommentPayload"></param>
-        /// <param name="issueUpdate"></param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="prCommentPayload">IssueCommentPayload deserialized from the json event payload</param>
+        /// <returns></returns>
         public static async Task ReopenPullRequest(GitHubEventClient gitHubEventClient, IssueCommentPayload prCommentPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.ReopenPullRequest))

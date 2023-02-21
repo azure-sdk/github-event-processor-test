@@ -12,8 +12,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
     //
     // If there is a rule that requires processing on issue/issue_comment, then the logic should be in a separate
     // function inside of IssueProcessing that both will call. 
-    // It's also worth noting that the Octokit's IssueCommentPayload has parity to the GitHub Payload
-    // which means it can be used as-is for deserialization.
     public class IssueCommentProcessing
     {
         public static async Task ProcessIssueCommentEvent(GitHubEventClient gitHubEventClient, IssueCommentPayload issueCommentPayload)
@@ -45,7 +43,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///     Add "needs-team-attention" label
         ///     Create issue comment
         /// </summary>
-        /// <param name="gitHubEventClient">Authenticated gitHubEventClient</param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueCommentPayload">issue_comment event payload</param>
         public static void AuthorFeedback(GitHubEventClient gitHubEventClient, IssueCommentPayload issueCommentPayload)
         {
@@ -71,7 +69,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// For issue_comments, the trigger Action is created 
         /// See Common_ResetIssueActivity comments
         /// </summary>
-        /// <param name="gitHubEventClient">Authenticated gitHubEventClient</param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueCommentPayload">issue_comment event payload</param>
         public static void ResetIssueActivity(GitHubEventClient gitHubEventClient, IssueCommentPayload issueCommentPayload)
         {
@@ -96,7 +94,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///     Remove "needs-author-feedback" label
         ///     Add "needs-team-attention" label
         /// </summary>
-        /// <param name="gitHubEventClient">Authenticated gitHubEventClient</param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueCommentPayload">issue_comment event payload</param>
         public static void ReopenIssue(GitHubEventClient gitHubEventClient, IssueCommentPayload issueCommentPayload)
         {
@@ -134,7 +132,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// Resulting Action: 
         ///     Add issue comment
         /// </summary>
-        /// <param name="gitHubEventClient">Authenticated gitHubEventClient</param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueCommentPayload">issue_comment event payload</param>
         public static async Task DeclineToReopenIssue(GitHubEventClient gitHubEventClient, IssueCommentPayload issueCommentPayload)
         {
@@ -175,7 +173,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///         "Hi ${contextualAuthor}, only the original author of the issue can ask that it be unresolved.  
         ///         Please open a new issue with your scenario and details if you would like to discuss this topic with the team."
         /// </summary>
-        /// <param name="gitHubEventClient">Authenticated gitHubEventClient</param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueCommentPayload">issue_comment event payload</param>
         public static async Task IssueAddressedCommands(GitHubEventClient gitHubEventClient, IssueCommentPayload issueCommentPayload)
         {

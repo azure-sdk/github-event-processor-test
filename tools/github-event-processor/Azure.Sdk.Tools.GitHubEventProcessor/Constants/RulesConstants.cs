@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor.Constants
 {
+    /// <summary>
+    /// Rules constants are used in the rules configuration to determine which actions are
+    /// available for a given repository.
+    /// </summary>
     public class RulesConstants
     {
         // issue rules

@@ -21,6 +21,14 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         // There's a secondary limit to the search API which is 1000 items. The default page size for the search
         // is 100 items (which is also the max per page)
         private static int MaxSearchResults = 1000;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
+        /// <param name="cronTaskToRun">String, the scheduled even</param>
+        /// <returns></returns>
         public static async Task ProcessScheduledEvent(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload, string cronTaskToRun)
         {
             switch (cronTaskToRun)
@@ -75,8 +83,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///     Close the issue
         ///     Create a comment "Hi @${issueAuthor}, since you haven’t asked that we `/unresolve` the issue, we’ll close this out. If you believe further discussion is needed, please add a comment `/unresolve` to reopen the issue."
         /// </summary>
-        /// <param name="gitHubEventClient"></param>
-        /// <param name="scheduledEventPayload"></param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
         /// <returns></returns>
         public static async Task CloseAddressedIssues(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
@@ -153,8 +161,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// Resulting Action: 
         ///     Close the issue
         /// </summary>
-        /// <param name="gitHubEventClient"></param>
-        /// <param name="scheduledEventPayload"></param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
         /// <returns></returns>
         public static async Task CloseStaleIssues(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
@@ -227,8 +235,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///     Close the pull request
         ///     Create a comment "Hi @${issueAuthor}.  Thank you for your contribution.  Since there hasn't been recent engagement, we're going to close this out.  Feel free to respond with a comment containing `/reopen` if you'd like to continue working on these changes.  Please be sure to use the command to reopen or remove the `no-recent-activity` label; otherwise, this is likely to be closed again with the next cleanup pass."
         /// </summary>
-        /// <param name="gitHubEventClient"></param>
-        /// <param name="scheduledEventPayload"></param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
         /// <returns></returns>
         public static async Task CloseStalePullRequests(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
@@ -305,8 +313,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///     Add "no-recent-activity" label
         ///     Create a comment "Hi @${issueAuthor}.  Thank you for your interest in helping to improve the Azure SDK experience and for your contribution.  We've noticed that there hasn't been recent engagement on this pull request.  If this is still an active work stream, please let us know by pushing some changes or leaving a comment.  Otherwise, we'll close this out in 7 days."
         /// </summary>
-        /// <param name="gitHubEventClient"></param>
-        /// <param name="scheduledEventPayload"></param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
         /// <returns></returns>
         public static async Task IdentifyStalePullRequests(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
@@ -385,8 +393,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         ///     Add "no-recent-activity" label
         ///     Create a comment: "Hi @{issueAuthor}, we're sending this friendly reminder because we haven't heard back from you in **7 days**. We need more information about this issue to help address it. Please be sure to give us your input. If we don't hear back from you within **14 days** of this comment the issue will be automatically closed. Thank you!"
         /// </summary>
-        /// <param name="gitHubEventClient"></param>
-        /// <param name="scheduledEventPayload"></param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
         /// <returns></returns>
         public static async Task IdentifyStaleIssues(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
@@ -468,8 +476,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// Resulting Action:
         ///     Lock issue conversations
         /// </summary>
-        /// <param name="gitHubEventClient"></param>
-        /// <param name="scheduledEventPayload"></param>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
         /// <returns></returns>
         public static async Task LockClosedIssues(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
