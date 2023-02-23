@@ -1,16 +1,11 @@
 name: Scheduled Event GitHub Processor
 
-# testing to see if we can use aliases
-# every 5 minutes
-CloseAddressedIssuesCron: &CloseAddressedIssuesCron '*/5 * * * *'
-LockClosedIssuesCron: &LockClosedIssuesCron '*/6 * * * *'
-
-# JRS - Trying to see if we can use aliases for the cron schedule since they're going
-#       used in multiple places
 on:
   schedule:
-    - cron: *CloseAddressedIssuesCron
-    - cron: *LockClosedIssuesCron
+    # CloseAddressedIssues - test, schedule is every 5 minutes
+    - cron: '*/5 * * * *'
+    # LockClosedIssues - test, schedule is every 6 minutes
+    - cron: '*/6 * * * *'
 # This removes all unnecessary permissions, the ones needed will be set below.
 # https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
 permissions: {}
@@ -24,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: CloseAddressedIssues scheduled event
-        if: github.event.schedule == *CloseAddressedIssuesCron
+      - name: Close Addressed Issues scheduled event
+        if: github.event.schedule == '*/5 * * * *'
         run: |
           echo $GITHUB_PAYLOAD > payload.json
           dotnet run -- ${{ github.event_name }} payload.json CloseAddressedIssues
@@ -35,7 +30,7 @@ jobs:
           GITHUB_PAYLOAD: ${{ toJson(github.event) }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: LockClosedIssues scheduled event
-        if: github.event.schedule == *LockClosedIssuesCron
+        if: github.event.schedule == '*/6 * * * *'
         run: |
           echo $GITHUB_PAYLOAD > payload.json
           dotnet run -- ${{ github.event_name }} payload.json LockClosedIssues
