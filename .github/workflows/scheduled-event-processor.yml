@@ -1,4 +1,4 @@
-name: Cron GitHub Event Processor
+name: GitHub Scheduled Event Processor
 
 on:
   schedule:
