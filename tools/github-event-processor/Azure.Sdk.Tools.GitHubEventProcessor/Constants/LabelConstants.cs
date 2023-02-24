@@ -7,7 +7,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Constants
 
     /// <summary>
     /// These are label constants that are common to all language repositories and ones
-    /// that the rules use for processing. No team, or lanaguage, specific labels belong
+    /// that the rules use for processing. No team, or lanaguage specific labels belong
     /// in here.
     /// </summary>
     public class LabelConstants

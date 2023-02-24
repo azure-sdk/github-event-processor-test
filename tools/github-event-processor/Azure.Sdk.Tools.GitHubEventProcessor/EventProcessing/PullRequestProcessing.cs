@@ -17,7 +17,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="prEventPayload">PullRequestEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task ProcessPullRequestEvent(GitHubEventClient gitHubEventClient, PullRequestEventGitHubPayload prEventPayload)
         {
             await PullRequestTriage(gitHubEventClient, prEventPayload);
@@ -42,7 +41,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="prEventPayload">PullRequestEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task PullRequestTriage(GitHubEventClient gitHubEventClient,
                                                    PullRequestEventGitHubPayload prEventPayload)
         {
@@ -85,7 +83,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="prEventPayload">PullRequestEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static void ResetPullRequestActivity(GitHubEventClient gitHubEventClient,
                                                     PullRequestEventGitHubPayload prEventPayload)
         {
@@ -122,7 +119,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// <param name="pullRequest">Octokit.PullRequest object from the respective payload</param>
         /// <param name="repository">Octokit.Repository object from the respective payload</param>
         /// <param name="sender">Octokit.User from the payload's Sender.</param>
-        /// <returns></returns>
         public static void Common_ResetPullRequestActivity(GitHubEventClient gitHubEventClient,
                                                            string action,
                                                            PullRequest pullRequest,
@@ -183,7 +179,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="prEventPayload">PullRequestEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task ResetApprovalsForUntrustedChanges(GitHubEventClient gitHubEventClient,
                                                                    PullRequestEventGitHubPayload prEventPayload)
         {
@@ -228,18 +223,17 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="rawJson">The rawJson to deserialize</param>
         /// <param name="serializer">Octokit.Internal.SimpleJsonSerializer which is serializer used to deserialize the payload into OctoKit classes.</param>
-        /// <returns></returns>
+        /// <returns>PullRequestEventGitHubPayload deserialized from the event json</returns>
         public static PullRequestEventGitHubPayload DeserializePullRequest(string rawJson, SimpleJsonSerializer serializer)
         {
             PullRequestEventGitHubPayload prEventPayload = serializer.Deserialize<PullRequestEventGitHubPayload>(rawJson);
             using var doc = JsonDocument.Parse(rawJson);
             // The actions event payload for a pull_request has a class on the pull request that
-            // the OctoKit.PullRequest class does not have. This will be null if the user the user
-            // does not have Auto-Merge enabled through the pull request UI and will be non-null if
-            // the user enabled it through the UI. An AutoMergeEnabled was added to the root of the
-            // PullRequestEventGitHubPayload class, which defaults to false. The actual information
-            // in the auto_merge is not necessary for any rules processing other than knowing whether
-            // or not it's been set.
+            // the OctoKit.PullRequest class does not have. This will be null if the user does not
+            // have Auto-Merge enabled through the pull request UI and will be non-null otherwise.
+            // An AutoMergeEnabled boolean was added to the root of the PullRequestEventGitHubPayload
+            // which defaults to false. The actual information in the auto_merge is not necessary
+            // for any rules processing other than knowing whether or not it's been set.
             var autoMergeProp = doc.RootElement.GetProperty("pull_request").GetProperty("auto_merge");
             if (JsonValueKind.Object == autoMergeProp.ValueKind)
             {

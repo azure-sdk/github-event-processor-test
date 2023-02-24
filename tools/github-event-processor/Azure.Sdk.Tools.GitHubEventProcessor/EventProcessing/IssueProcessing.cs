@@ -17,13 +17,11 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
     public class IssueProcessing
     {
         /// <summary>
-        /// Issue rules can be found on the gist, https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#issue-rules
         /// Every rule will have it's own function that will be called here, the rule configuration will determine
         /// which rules will execute.
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueEventPayload">IssueEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task ProcessIssueEvent(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
             await InitialIssueTriage(gitHubEventClient, issueEventPayload);
@@ -37,7 +35,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
             IssueAddressedReset(gitHubEventClient, issueEventPayload);
 
             // After all of the rules have been processed, call to process pending updates
-            int numUpdates = await gitHubEventClient.ProcessPendingUpdates(issueEventPayload.Repository.Id, issueEventPayload.Issue.Number);
+            await gitHubEventClient.ProcessPendingUpdates(issueEventPayload.Repository.Id, issueEventPayload.Issue.Number);
         }
 
         // Processing functions should always do the following, in order
@@ -77,7 +75,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueEventPayload">IssueEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task InitialIssueTriage(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.InitialIssueTriage))
@@ -191,7 +188,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueEventPayload">IssueEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static void ServiceAttention(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.ServiceAttention))
@@ -240,7 +236,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueEventPayload">IssueEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static void CXPAttention(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.CXPAttention))
@@ -269,7 +264,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueEventPayload">IssueEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static void ManualTriageAfterExternalAssignment(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.ManualTriageAfterExternalAssignment))
@@ -296,7 +290,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueEventPayload">IssueEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static void ResetIssueActivity(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
             if (issueEventPayload.Action == ActionConstants.Edited || issueEventPayload.Action == ActionConstants.Reopened)
@@ -318,7 +311,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// <param name="action">The action being performed, from the payload object</param>
         /// <param name="issue">Octokit.Issue object from the respective payload.</param>
         /// <param name="sender">Octokit.User from the payload's Sender.</param>
-        /// <returns></returns>
         public static void Common_ResetIssueActivity(GitHubEventClient gitHubEventClient, string action, Issue issue, User sender)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.ResetIssueActivity))
@@ -349,7 +341,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueEventPayload">IssueEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static void RequireAttentionForNonMilestone(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.RequireAttentionForNonMilestone))
@@ -384,7 +375,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueEventPayload">IssueEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static void AuthorFeedbackNeeded(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.AuthorFeedbackNeeded))
@@ -423,7 +413,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueEventPayload">IssueEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static void IssueAddressed(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.IssueAddressed))
@@ -473,7 +462,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="issueEventPayload">IssueEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static void IssueAddressedReset(GitHubEventClient gitHubEventClient, IssueEventGitHubPayload issueEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.IssueAddressedReset))

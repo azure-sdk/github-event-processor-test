@@ -22,14 +22,13 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="prCommentPayload">IssueCommentPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task ProcessPullRequestCommentEvent(GitHubEventClient gitHubEventClient, IssueCommentPayload prCommentPayload)
         {
             await ResetPullRequestActivity(gitHubEventClient, prCommentPayload);
             await ReopenPullRequest(gitHubEventClient, prCommentPayload);
 
             // After all of the rules have been processed, call to process pending updates
-            int numUpdates = await gitHubEventClient.ProcessPendingUpdates(prCommentPayload.Repository.Id, prCommentPayload.Issue.Number);
+            await gitHubEventClient.ProcessPendingUpdates(prCommentPayload.Repository.Id, prCommentPayload.Issue.Number);
         }
 
         /// <summary>
@@ -48,7 +47,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="prCommentPayload">IssueCommentPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task ResetPullRequestActivity(GitHubEventClient gitHubEventClient,
                                                           IssueCommentPayload prCommentPayload)
         {
@@ -108,7 +106,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="prCommentPayload">IssueCommentPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task ReopenPullRequest(GitHubEventClient gitHubEventClient, IssueCommentPayload prCommentPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.ReopenPullRequest))

@@ -6,34 +6,28 @@ using Azure.Sdk.Tools.GitHubEventProcessor.Constants;
 
 namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
 {
-    // Issue Comment Processing also includes PR comments. The guidance for pull_request_comment
-    // say to use the issue comment event
-    // https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request_comment-use-issue_comment
-    //
-    // If there is a rule that requires processing on issue/issue_comment, then the logic should be in a separate
-    // function inside of IssueProcessing that both will call. 
     public class IssueCommentProcessing
     {
+
+        /// Every rule will have it's own function that will be called here, the rule configuration will determine
+        /// which rules will execute.
+        /// </summary>
+        /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
+        /// <param name="issueCommentPayload">IssueCommentPayload deserialized from the json event payload</param>
         public static async Task ProcessIssueCommentEvent(GitHubEventClient gitHubEventClient, IssueCommentPayload issueCommentPayload)
         {
-
-            // If the Issue Comment a PullRequest Comment
-            if (issueCommentPayload.Issue.PullRequest != null)
-            {
-                return;
-            }
-
             AuthorFeedback(gitHubEventClient, issueCommentPayload);
             ResetIssueActivity(gitHubEventClient, issueCommentPayload);
             ReopenIssue(gitHubEventClient, issueCommentPayload);
             await DeclineToReopenIssue(gitHubEventClient, issueCommentPayload);
             await IssueAddressedCommands(gitHubEventClient, issueCommentPayload);
 
-            int numUpdates = await gitHubEventClient.ProcessPendingUpdates(issueCommentPayload.Repository.Id, issueCommentPayload.Issue.Number);
+            // After all of the rules have been processed, call to process pending updates
+            await gitHubEventClient.ProcessPendingUpdates(issueCommentPayload.Repository.Id, issueCommentPayload.Issue.Number);
         }
 
         /// <summary>
-        /// Author Feedback https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#author-feedback
+        /// Author Feedback
         /// Trigger: issue comment created
         /// Conditions: Issue is open
         ///             Issue has "needs-author-feedback" label
@@ -65,7 +59,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
             }
         }
         /// <summary>
-        /// Reset Issue Activity https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#reset-issue-activity
+        /// Reset Issue Activity
         /// For issue_comments, the trigger Action is created 
         /// See Common_ResetIssueActivity comments
         /// </summary>
@@ -80,7 +74,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         }
 
         /// <summary>
-        /// Reopen Issue https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#reopen-issue
+        /// Reopen Issue
         /// Trigger: issue comment created
         /// Conditions: Issue is closed
         ///             Issue has label "no-recent-activity"
@@ -122,7 +116,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         }
 
         /// <summary>
-        /// Decline to reopen issue https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#decline-to-reopen-issue
+        /// Decline To Reopen Issue
         /// Trigger: issue comment created
         /// Conditions: Issue is closed
         ///             Issue has been closed for more than 7 days
@@ -158,7 +152,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         }
 
         /// <summary>
-        /// Issue Addressed Commands https://gist.github.com/jsquire/cfff24f50da0d5906829c5b3de661a84#issue-addressed-commands
+        /// Issue Addressed Commands
         /// Trigger: issue comment created
         /// Conditions: Has label "issue-addressed"
         ///             Comment text contains the string "/unresolve"

@@ -428,7 +428,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// </summary>
         /// <param name="repositoryId">The Id of the repository</param>
         /// <param name="pullRequestNumber">The pull request number</param>
-        /// <returns></returns>
+        /// <returns>IReadOnlyList of PullRequestFiles associated with the pull request</returns>
         public virtual async Task<IReadOnlyList<PullRequestFile>> GetFilesForPullRequest(long repositoryId, int pullRequestNumber)
         {
             // For whatever reason the default page size is 30 instead of 100.
@@ -442,7 +442,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// </summary>
         /// <param name="repositoryId">The Id of the repository</param>
         /// <param name="user">The User.Login for the event object from the action payload</param>
-        /// <returns></returns>
+        /// <returns>bool, true if the user is a Collaborator, false otherwise</returns>
         public virtual async Task<bool> IsUserCollaborator(long repositoryId, string user)
         {
             return await _gitHubClient.Repository.Collaborator.IsCollaborator(repositoryId, user);
@@ -453,7 +453,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// </summary>
         /// <param name="orgName">Organization name. Chances are this will only ever be "Azure"</param>
         /// <param name="user">The User.Login for the event object from the action payload</param>
-        /// <returns></returns>
+        /// <returns>bool, true if the user is a member of the org, false otherwise</returns>
         public virtual async Task<bool> IsUserMemberOfOrg(string orgName, string user)
         {
             // Chances are the orgname is only going to be "Azure"
@@ -466,7 +466,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// <param name="repositoryId">The Id of the Repository</param>
         /// <param name="user">The User.Login for the event object from the action payload</param>
         /// <param name="permission">OctoKit.PermissionLevel to check</param>
-        /// <returns></returns>
+        /// <returns>bool, true if the user has the permission level, false otherwise</returns>
         public async Task<bool> DoesUserHavePermission(long repositoryId, string user, PermissionLevel permission)
         {
             List<PermissionLevel> permissionList = new List<PermissionLevel>
@@ -477,13 +477,13 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         }
 
         /// <summary>
-        /// There are a lot of checks to see if user has Write Collaborator permissions however permissions however
-        /// Collaborator permissions levels are Admin, Write, Read and None. Checking to see if a user has Write
-        /// permissions translates to does the user have Admin or Write.
+        /// There are a lot of checks to see if user has Write Collaborator permissions, however,
+        /// Collaborator permission levels are Admin, Write, Read and None. Checking to see if a
+        /// user has Write permissions translates to does the user have Admin or Write.
         /// </summary>
         /// <param name="repositoryId">The Id of the Repository</param>
         /// <param name="user">The User.Login for the event object from the action payload</param>
-        /// <returns></returns>
+        /// <returns>bool, true if the use has Write or Admin permissions, false otherwise</returns>
         public async Task<bool> DoesUserHaveAdminOrWritePermission(long repositoryId, string user)
         {
             List<PermissionLevel> permissionList = new List<PermissionLevel>
@@ -494,9 +494,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             return await DoesUserHavePermissions(repositoryId, user, permissionList);
         }
 
-
-        // There are several checks that look to see if a user's permission is NOT Admin or Write which
-        // means both need to be checked but making multiple calls is not necessary
         /// <summary>
         /// Check whether or not the user has one of the permissions in the list. There's no concept of a permission
         /// hierarchy when checking permissions. For example, if something requires a user have Write permission
@@ -505,7 +502,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// <param name="repositoryId">The Id of the Repository</param>
         /// <param name="user">The User.Login for the event object from the action payload</param>
         /// <param name="permissionList">List of Octokit.PermissionLevels</param>
-        /// <returns></returns>
+        /// <returns>bool, true if the user has any permissions in the permissionList, false otherwise</returns>
         public virtual async Task<bool> DoesUserHavePermissions(long repositoryId, string user, List<PermissionLevel> permissionList)
         {
             try
@@ -543,7 +540,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// <param name="labelsToInclude">Optional: List of labels to include, null if none</param>
         /// <param name="labelsToExclude">Optional: List of labels to exclude, null if none</param>
         /// <param name="daysSinceLastUpdate">Optional: Number of days since last updated </param>
-        /// <returns>SearchIssuesRequest with the information passed in.</returns>
+        /// <returns>SearchIssuesRequest created with the information passed in.</returns>
         public SearchIssuesRequest CreateSearchRequest(string repoOwner,
                                                        string repoName,
                                                        IssueTypeQualifier issueType,
@@ -614,8 +611,9 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// </summary>
         /// <param name="productHeaderName">This is used to generate the User Agent string sent with each request. The name used should represent the product, the GitHub Organization, or the GitHub username that's using Octokit.net (in that order of preference).</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ApplicationException"></exception>
+        /// <exception cref="ArgumentException">If the product header name is null or empty</exception>
+        /// <exception cref="ApplicationException">If there is no GITHUB_TOKEN in the environment</exception>
+        /// <returns>Authenticated GitHubClient</returns>
         public virtual GitHubClient CreateClientWithGitHubEnvToken(string productHeaderName)
         {
             if (string.IsNullOrEmpty(productHeaderName))
@@ -638,7 +636,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// Load the rules configuration.
         /// </summary>
         /// <param name="rulesConfigLocation">Optional path to the rules config location. If not set it'll check for the rules configuration in its well known location.</param>
-        /// <returns></returns>
+        /// <returns>RulesConfiguration loaded from the input location or well known location</returns>
         public virtual RulesConfiguration LoadRulesConfiguration(string rulesConfigLocation = null)
         {
             // if the rulesConfigLocation is set, try and load the rules from there, otherwise
@@ -648,6 +646,9 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             return rulesConfiguration;
         }
 
+        /// <summary>
+        /// Class to hold the response from the AI Label Service query
+        /// </summary>
         public class LabelResponse
         {
             public string[] Labels { get; set; }

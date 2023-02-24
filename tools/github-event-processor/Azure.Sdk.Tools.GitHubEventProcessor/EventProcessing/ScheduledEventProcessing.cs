@@ -28,7 +28,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
         /// <param name="cronTaskToRun">String, the scheduled even</param>
-        /// <returns></returns>
         public static async Task ProcessScheduledEvent(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload, string cronTaskToRun)
         {
             switch (cronTaskToRun)
@@ -65,12 +64,13 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
                     }
                 default:
                     {
+                        Console.WriteLine($"{cronTaskToRun} is not valid Scheduled Event rule. Please ensure the scheduled event yml is correctly passing in the correct rules constant.");
                         break;
                     }
             }
             // The second argument is IssueOrPullRequestNumber which isn't applicable to scheduled events (cron tasks)
             // since they're not going to be changing a single IssueUpdate like rules processing does.
-            int numUpdates = await gitHubEventClient.ProcessPendingUpdates(scheduledEventPayload.Repository.Id);
+            await gitHubEventClient.ProcessPendingUpdates(scheduledEventPayload.Repository.Id);
         }
 
         /// <summary>
@@ -85,7 +85,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task CloseAddressedIssues(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.CloseAddressedIssues))
@@ -163,7 +162,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task CloseStaleIssues(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.CloseStaleIssues))
@@ -237,7 +235,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task CloseStalePullRequests(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.CloseStalePullRequests))
@@ -315,7 +312,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task IdentifyStalePullRequests(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.IdentifyStalePullRequests))
@@ -395,7 +391,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task IdentifyStaleIssues(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.IdentifyStaleIssues))
@@ -478,7 +473,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.EventProcessing
         /// </summary>
         /// <param name="gitHubEventClient">Authenticated GitHubEventClient</param>
         /// <param name="scheduledEventPayload">ScheduledEventGitHubPayload deserialized from the json event payload</param>
-        /// <returns></returns>
         public static async Task LockClosedIssues(GitHubEventClient gitHubEventClient, ScheduledEventGitHubPayload scheduledEventPayload)
         {
             if (gitHubEventClient.RulesConfiguration.RuleEnabled(RulesConstants.LockClosedIssues))
