@@ -146,43 +146,31 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// <returns>Integer, the number of update calls made</returns>
         public virtual async Task<int> ProcessPendingUpdates(long repositoryId, int issueOrPullRequestNumber = 0)
         {
+            Console.WriteLine("Processing pending updates...");
             int numUpdates = 0;
-
-            if (_issueUpdate != null)
+            int numExpectedUpdates = ComputeNumberOfExpectedUpdates();
+            try
             {
-                numUpdates++;
-                try
+                // Process the issue update
+                if (_issueUpdate != null)
                 {
-                    await _gitHubClient.Issue.Update(repositoryId, issueOrPullRequestNumber, _issueUpdate);
+                    await _gitHubClient.Issue.Update(repositoryId, 
+                                                     issueOrPullRequestNumber, 
+                                                     _issueUpdate);
+                    numUpdates++;
                 }
-                catch (Exception ex)
-                {
-                    // JRS - what to do if this throws?
-                    Console.WriteLine(ex);
-                }
-            }
 
-            // Process any comments
-            foreach (var comment in _gitHubComments)
-            {
-                numUpdates++;
-                try
+                // Process any comments
+                foreach (var comment in _gitHubComments)
                 {
                     await _gitHubClient.Issue.Comment.Create(comment.RepositoryId,
                                                              comment.IssueOrPullRequestNumber,
                                                              comment.Comment);
+                    numUpdates++;
                 }
-                catch (Exception ex)
-                {
-                    // JRS - what to do if this throws?
-                    Console.WriteLine(ex);
-                }
-            }
 
-            foreach (var dismissal in _gitHubReviewDismissals)
-            {
-                numUpdates++;
-                try
+                // Process any PullRequest review dismissals
+                foreach (var dismissal in _gitHubReviewDismissals)
                 {
                     var prReview = new PullRequestReviewDismiss();
                     prReview.Message = dismissal.DismissalMessage;
@@ -190,44 +178,84 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
                                                                    dismissal.PullRequestNumber,
                                                                    dismissal.ReviewId,
                                                                    prReview);
+                    numUpdates++;
                 }
-                catch (Exception ex)
-                {
-                    // JRS - what to do if this throws?
-                    Console.WriteLine(ex);
-                }
-            }
 
-            foreach (var issueToLock in _gitHubIssuesToLock)
-            {
-                numUpdates++;
-                try
+                // Process any issue locks
+                foreach (var issueToLock in _gitHubIssuesToLock)
                 {
-                    await _gitHubClient.Issue.LockUnlock.Lock(issueToLock.RepositoryId, 
-                                                              issueToLock.IssueNumber, 
+                    await _gitHubClient.Issue.LockUnlock.Lock(issueToLock.RepositoryId,
+                                                              issueToLock.IssueNumber,
                                                               issueToLock.LockReason);
+                    numUpdates++;
                 }
-                catch (Exception ex)
-                {
-                    // JRS - what to do if this throws?
-                    Console.WriteLine(ex);
-                }
-            }
 
-            foreach (var issueToUpdate in _gitHubIssuesToUpdate)
+                // Process any Scheduled task IssueUpdates
+                foreach (var issueToUpdate in _gitHubIssuesToUpdate)
+                {
+                    await _gitHubClient.Issue.Update(issueToUpdate.RepositoryId, 
+                                                     issueToUpdate.IssueOrPRNumber, 
+                                                     issueToUpdate.IssueUpdate);
+                    numUpdates++;
+                }
+                Console.WriteLine("Finished processing pending updates.");
+            }
+            // For the moment, nothing special is being done when rate limit exceptions are
+            // thrown but keep them separate in case that changes.
+            catch (RateLimitExceededException rateLimitEx)
             {
-                numUpdates++;
-                try
-                {
-                    await _gitHubClient.Issue.Update(issueToUpdate.RepositoryId, issueToUpdate.IssueOrPRNumber, issueToUpdate.IssueUpdate);
-                }
-                catch (Exception ex)
-                {
-                    // JRS - what to do if this throws?
-                    Console.WriteLine(ex);
-                }
+                string message = $"RateLimitExceededException was thrown processing pending updates. Total expected updates={numExpectedUpdates}, number of updates made={numUpdates}.";
+                Console.WriteLine(message);
+                Console.WriteLine(rateLimitEx);
+            }
+            catch (SecondaryRateLimitExceededException secondaryRateLimitEx)
+            {
+                string message = $"SecondaryRateLimitExceededException was thrown processing pending updates. Total expected updates={numExpectedUpdates}, number of updates made={numUpdates}.";
+                Console.WriteLine(message);
+                Console.WriteLine(secondaryRateLimitEx);
+            }
+            catch (Exception ex)
+            {
+                string message = $"Exception was thrown processing pending updates. Total expected updates={numExpectedUpdates}, number of updates made={numUpdates}.";
+                Console.WriteLine(message);
+                Console.WriteLine(ex);
             }
 
+            return numUpdates;
+        }
+
+        /// <summary>
+        /// Compute and output the number of expected updates.
+        /// </summary>
+        /// <returns>int, the total number of expected updates</returns>
+        public int ComputeNumberOfExpectedUpdates()
+        {
+            int numUpdates = 0;
+            if (_issueUpdate != null)
+            {
+                Console.WriteLine("Common IssueUpdate from rules processing will be updated.");
+                numUpdates++;
+            }
+            if (_gitHubComments.Count > 0)
+            {
+                Console.WriteLine($"Number of Comments to create {_gitHubComments.Count}");
+                numUpdates += _gitHubComments.Count;
+            }
+            if (_gitHubReviewDismissals.Count > 0)
+            {
+                Console.WriteLine($"Number of Review Dismissals {_gitHubReviewDismissals.Count}");
+                numUpdates += _gitHubReviewDismissals.Count;
+            }
+            if (_gitHubIssuesToLock.Count > 0)
+            {
+                Console.WriteLine($"Number of Issues to Lock {_gitHubIssuesToLock.Count}");
+                numUpdates += _gitHubIssuesToLock.Count;
+            }
+            if (_gitHubIssuesToUpdate.Count > 0)
+            {
+                Console.WriteLine($"Number of IssuesUpdates (only applicable for Scheduled events) {_gitHubIssuesToUpdate.Count}");
+                numUpdates += _gitHubIssuesToUpdate.Count;
+            }
             return numUpdates;
         }
 
