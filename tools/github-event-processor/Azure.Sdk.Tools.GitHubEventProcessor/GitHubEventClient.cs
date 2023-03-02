@@ -630,8 +630,43 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
         /// <returns>OctoKit.SearchIssuesResult</returns>
         public virtual async Task<SearchIssuesResult> QueryIssues(SearchIssuesRequest searchIssuesRequest)
         {
-            var searchIssueResult = await _gitHubClient.Search.SearchIssues(searchIssuesRequest);
-            return searchIssueResult;
+            int maxTries = 3;
+            // 90 seconds
+            int sleepDuration = 90000;
+            for (int tryNumber = 1; tryNumber <= maxTries; tryNumber++)
+            {
+                try
+                {
+                    Console.WriteLine($"Calling SearchIssues, try number {tryNumber}. Page number={searchIssuesRequest.Page}, results per page={searchIssuesRequest.PerPage}");
+                    var searchIssueResult = await _gitHubClient.Search.SearchIssues(searchIssuesRequest);
+                    Console.WriteLine($"Call returned {searchIssueResult.Items.Count} results out of {searchIssueResult.TotalCount} total results.");
+                    return searchIssueResult;
+                }
+                catch (SecondaryRateLimitExceededException secondaryRateLimitEx)
+                {
+                    Console.WriteLine($"In QueryIssues, a SecondaryRateLimitExceededException was caught from a SearchIssues call.");
+                    if (null != secondaryRateLimitEx.InnerException)
+                    {
+                        Console.WriteLine($"InnerException was non-null, InnerException={secondaryRateLimitEx.InnerException}");
+                    }
+                    if (tryNumber == maxTries)
+                    {
+                        Console.WriteLine($"QueryIssues, number of retries, {maxTries}, have been exhausted, rethrowing.");
+                        throw;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"QueryIssues, sleeping for {sleepDuration/1000} seconds before retrying.");
+                        System.Threading.Thread.Sleep(sleepDuration);
+                    }
+                }
+            }
+            // This code will never get hit.
+            // This is fix CS0161 (not all code paths return a value). Either the function will return a successful
+            // SearchIssuesResult above OR it'll rethrow the last SecondaryRateLimitExceededException encountered
+            // in the retry loop.
+            SearchIssuesResult searchIssuesResult = new SearchIssuesResult();
+            return searchIssuesResult;
         }
 
         /// <summary>
