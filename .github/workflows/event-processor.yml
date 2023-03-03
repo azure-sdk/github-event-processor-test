@@ -55,7 +55,7 @@ jobs:
         run: >
           dotnet tool install
           Azure.Sdk.Tools.GitHubEventProcessor
-          --version 1.0.0-dev.20230303.4
+          --version 1.0.0-dev.20230303.6
           --add-source https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-net/nuget/v3/index.json
           --global
         shell: bash
@@ -72,9 +72,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LABEL_SERVICE_API_KEY: ${{ env.LABEL_SERVICE_API_KEY }}
 
-      # - name: Process Action Event - This one builds from sources
-      #   # Underneath/instead of the echo statement is where we'd call our application
-      #   # JRS - dotnet install GithubEventProcessor once we publish it as a package
+      # To run github-event-processor built from source, for testing purposes, uncomment this
+      # step and comment the two steps above this.
+      # - name: Process Action Event - Built from source
       #   run: |
       #     echo $GITHUB_PAYLOAD > payload.json
       #     dotnet run -- ${{ github.event_name }} payload.json
