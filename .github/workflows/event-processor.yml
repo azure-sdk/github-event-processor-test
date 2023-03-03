@@ -55,7 +55,7 @@ jobs:
         run: >
           dotnet tool install
           Azure.Sdk.Tools.GitHubEventProcessor
-          --version 1.0.0-dev.20230302.4
+          --version 1.0.0-dev.20230303.4
           --add-source https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-net/nuget/v3/index.json
           --global
         shell: bash
@@ -63,7 +63,7 @@ jobs:
       - name: Process Action Event
         run: |
           echo $GITHUB_PAYLOAD > payload.json
-          Azure.Sdk.Tools.GitHubEventProcessor ${{ github.event_name }} payload.json
+          github-event-processor ${{ github.event_name }} payload.json
         shell: bash
         env:
           GITHUB_PAYLOAD: ${{ toJson(github.event) }}
