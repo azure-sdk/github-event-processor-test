@@ -667,9 +667,18 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
                 catch (SecondaryRateLimitExceededException secondaryRateLimitEx)
                 {
                     Console.WriteLine($"In QueryIssues, a SecondaryRateLimitExceededException was caught from a SearchIssues call.");
-                    if (null != secondaryRateLimitEx.InnerException)
+                    if (null != secondaryRateLimitEx.HttpResponse)
                     {
-                        Console.WriteLine($"InnerException was non-null, InnerException={secondaryRateLimitEx.InnerException}");
+                        Console.WriteLine($"HttpStatusCode={secondaryRateLimitEx.HttpResponse.StatusCode}");
+                        Console.WriteLine("HttpResponse info:");
+                        foreach (KeyValuePair<string, string> kvp in secondaryRateLimitEx.HttpResponse.Headers)
+                        {
+                            Console.WriteLine($"[{kvp.Key}, {kvp.Value}]");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("secondaryRateLimitEx.HttpResponse was null");
                     }
                     if (tryNumber == maxTries)
                     {
