@@ -27,7 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
+      # To run github-event-processor built from source, for testing purposes, uncomment everything
+      # in between the Start/End-Build From Source comments and comment everything in between the
+      # Start/End-Install comments
+      # Start-Install
       # - name: Install GitHub Event Processor
       #   run: >
       #     dotnet tool install
@@ -102,9 +105,12 @@ jobs:
       #   env:
       #     GITHUB_PAYLOAD: ${{ toJson(github.event) }}
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # End-Install
 
-      # To run github-event-processor built from source, for testing purposes, uncomment these
-      # steps and comment everything above up to and including the install step
+      # To run github-event-processor built from source, for testing purposes, uncomment everything
+      # in between the Start/End-Build From Source comments and comment everything in between the
+      # Start/End-Install comments
+      # Start-Build From Source
       - name: Close Stale Issues Scheduled Event - Built from source
         if: github.event.schedule == '0 1 * * *'
         run: |
@@ -170,3 +176,4 @@ jobs:
         env:
           GITHUB_PAYLOAD: ${{ toJson(github.event) }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # End-Build From Source
