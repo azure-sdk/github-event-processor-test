@@ -1,10 +1,8 @@
 # GitHub Event Processor
 
-JRS - Not finished yet
-
 ## Overview
 
-GitHub Event Processor is an Azure-SDK replacement for FabricBot. It's written in C# utilizing [Octokit.Net](https://github.com/octokit/octokit.net). Where FabricBot is a separate service, GitHub Event Processor will utilize Action and Scheduled events, triggered through [GitHub Action Workflows](https://docs.github.com/en/actions/using-workflows/about-workflows). These are defined YML files and placed into the .github/workflows directory of the repository utilizing them. For our purposes there will be two YML files, one for Actions and one for Scheduled events.
+GitHub Event Processor is an Azure-SDK replacement for FabricBot. It's written in C# using [Octokit.Net](https://github.com/octokit/octokit.net). Where FabricBot is a separate service, GitHub Event Processor will utilize Action and Scheduled events, triggered through [GitHub Action Workflows](https://docs.github.com/en/actions/using-workflows/about-workflows). These are defined YML files and placed into the .github/workflows directory of the repository utilizing them. For our purposes there will be two YML files, one for Actions and one for Scheduled events.
 
 [Rules and Cron task definitions](./RULES.md)
 
@@ -27,20 +25,20 @@ on:
     types: [created]
 ```
 
-This means that GitHub will only invoke the job in the yml file when an **issue** is edited, labeled, opened, reopened and unlabled or an **issue_comment** is created. All other events, and their actions, that aren't defined in the yml file will not trigger any processing.
+This means that GitHub will only invoke the job in the yml file when an **issue** is edited, labeled, opened, reopened and unlabeled or an **issue_comment** is created. All other events, and their actions, that aren't defined in the yml file will not trigger any processing.
 
 ### Command Line Arguments
 
 If running an action:
 
 ```powershell
-dotnet run -- ${{ github.event_name }} payload.json
+github-event-processor ${{ github.event_name }} payload.json
 ```
 
 If running a scheduled task:
 
 ```powershell
-dotnet run -- ${{ github.event_name }} payload.json <TaskToRun>
+github-event-processor ${{ github.event_name }} payload.json <TaskToRun>
 ```
 
 **github.event_name** will be one of the [workflow trigger events](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows). These are things like issues, issue_comment, pull_request_target, pull_request_review etc. This option is how the application knows what to class to deserialize the event payload into.
@@ -69,6 +67,42 @@ Every rule has a the following definition:
 
 For example, **ManualIssueTriage** is a rule that will only processes on an **Issues** event's **labeled** action. Its criteria is that the issue must be *Open*, have the *needs-triage* label and the label being added is not *needs-triage*. The action to take, if all the criteria has been met, is to remove the *needs-triage* label from the issue.
 
-The full list of Rules and their definitions can be found [here](../RULES.md)
+The full list of Rules and their definitions can be found [here](./RULES.md)
 
-## Octokit.Net
+### GitHub Authentication in Actions
+
+GitHub provides a token secret, GITHUB_TOKEN, which can be used to authenticate on behalf of GitHub Actions. Full documentation can be found [here](https://docs.github.com/en/actions/security-guides/automatic-token-authentication).
+
+#### GITHUB_TOKEN
+
+At the start of each action workflow, GitHub automatically creates a unique GITHUB_TOKEN secret which is used to authenticate during processing for that action. The token expires at the end of the action processing or 24 hours, whichever happens first.
+
+#### A note about the GITHUB_TOKEN used in Actions processing
+
+Actions are caused by activities defined on events. For example *issues* is an event and *labeled* would an action on that event. Changes made to issues, pull requests, comments etc, using the GITHUB_TOKEN do not cause other actions to fire. For example, **Manual Issue Triage** can remove a label if the criteria for the rule has been met but this removing this label will not cause an *issues* *unlabeled* event to fire. This is intentional to prevent accidental creation of circular workflow runs.
+
+### Actions vs Scheduled Events
+
+Actions, as previously stated, are triggered by activities on events. These are limited in scope to a single *Issue* or *Pull Request* and process immediately.
+
+Scheduled Events are cron tasks which perform operations on multiple *Issues* or *Pull Requests* as determined by queries different to each task. For example, the **Close Stale Issues** event looks for all *Issues* that have both *needs-author-feedback* and *no-recent-activity* labels which haven't been modified for 14 days and closes them.
+
+### GitHub Event Processor has the following dependencies
+
+1. Octokit.Net - The json payloads are deserialized using Octokit's SimpleJsonSerializer into Octokit classes and all communications with GitHub are done through Octokit's GitHubClient.
+2. CodeOwnersParser - CodeOwners Parser is used for the following but, in the near future, will be modified to handle a special case in the Initial Issue Triage rule.
+    - Retrieving auto labels for Pull Request based upon the file paths in the Pull Request
+    - Getting the list of people to @ mention when Service Attention is added to an Issue
+
+In addition to the above dependencies, the GitHubEventProcessor.Test project has the following additional test dependencies.
+
+1. NUnit - NUnit unit testing
+2. NUnit3TestAdapter - Used to run NUnit3 tests in Visual Studio
+3. Microsoft.NET.Test.Sdk - For the ability to run tests using **dotnet test**
+4. coverlet.collector - Generates test coverage data
+
+Note: github-event-processor's project has PackAsTool set to true which builds the project, with its dependencies into a single package. This will be installed as part of the GitHub Action yml.
+
+## Where to install from?
+
+The application is built and published to the [azure-sdk-for-net dev feed](https://dev.azure.com/azure-sdk/public/_artifacts/feed/azure-sdk-for-net/NuGet/Azure.Sdk.Tools.GitHubEventProcessor).

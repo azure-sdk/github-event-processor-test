@@ -440,7 +440,7 @@ OR
         - Assign the label
     ```
 
- - Determine if this is a community contribution:
+- Determine if this is a community contribution:
 
     ```text
     IF the PR author does not have write permission
@@ -618,7 +618,6 @@ OR
 
 ### Actions
 
-- Create a comment (content from .NET rule #26)
 - Close the issue
 - Create the following comment
   - "Hi @{issueAuthor}, since you haven’t asked that we “`/unresolve`” the issue, we’ll close this out. If you believe further discussion is needed, please add a comment “`/unresolve`” to reopen the issue."

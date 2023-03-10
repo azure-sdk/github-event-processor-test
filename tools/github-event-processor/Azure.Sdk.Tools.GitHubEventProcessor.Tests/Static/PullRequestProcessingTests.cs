@@ -29,11 +29,12 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
         ///         Add "Community Contribution" label
         ///         Create issue comment: "Thank you for your contribution @{issueAuthor} ! We will review the pull request and get back to you soon."
         /// </summary>
-        /// <param name="rule"></param>
-        /// <param name="payloadFile"></param>
-        /// <param name="ruleState"></param>
-        /// <returns></returns>
+        /// <param name="rule">String, RulesConstants for the rule being tested</param>
+        /// <param name="payloadFile">JSon payload file for the event being tested</param>
+        /// <param name="ruleState">Whether or not the rule is on/off</param>
+        /// <param name="hasWriteOrAdmin">Whether or not the PR creator has write or admin permissions</param>
         [Category("static")]
+        [NonParallelizable]
         [TestCase(RulesConstants.PullRequestTriage, "Tests.JsonEventPayloads/PullRequestTriage_pr_opened_no_labels.json", RuleState.On, true)]
         [TestCase(RulesConstants.PullRequestTriage, "Tests.JsonEventPayloads/PullRequestTriage_pr_opened_no_labels.json", RuleState.On, false)]
         [TestCase(RulesConstants.PullRequestTriage, "Tests.JsonEventPayloads/PullRequestTriage_pr_opened_no_labels.json", RuleState.Off, false)]
@@ -78,7 +79,7 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
                 else
                 {
                     expectedUpdates++;
-                    // Along with 
+                    // Along with the label updates, there should also be a comment added.
                     Assert.AreEqual(expectedUpdates, totalUpdates, $"The number of updates for a user without Write or Admin permission should have been {expectedUpdates} but was instead, {totalUpdates}");
                 }
                 // Retrieve the IssueUpdate and verify the expected changes
@@ -125,7 +126,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
         /// <param name="rule">String, RulesConstants for the rule being tested</param>
         /// <param name="payloadFile">JSon payload file for the event being tested</param>
         /// <param name="ruleState">Whether or not the rule is on/off</param>
-        /// <returns></returns>
         [Category("static")]
         [TestCase(RulesConstants.ResetPullRequestActivity, "Tests.JsonEventPayloads/ResetPullRequestActivity_pr_reopened.json", RuleState.On)]
         [TestCase(RulesConstants.ResetPullRequestActivity, "Tests.JsonEventPayloads/ResetPullRequestActivity_pr_reopened.json", RuleState.Off)]
@@ -175,7 +175,8 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor.Tests.Static
         /// <param name="rule">String, RulesConstants for the rule being tested</param>
         /// <param name="payloadFile">JSon payload file for the event being tested</param>
         /// <param name="ruleState">Whether or not the rule is on/off</param>
-        /// <returns></returns>
+        /// <param name="approvedReviews">Number of approved reviews the PR has</param>
+        /// <param name="notApprovedReviews">Number of not approved reviews the PR has</param>
         [Category("static")]
         [TestCase(RulesConstants.ResetApprovalsForUntrustedChanges, "Tests.JsonEventPayloads/ResetApprovalsForUntrustedChanges_pr_synchronize.json", RuleState.Off, 0, 0)]
         [TestCase(RulesConstants.ResetApprovalsForUntrustedChanges, "Tests.JsonEventPayloads/ResetApprovalsForUntrustedChanges_pr_synchronize.json", RuleState.On, 0, 0)]
