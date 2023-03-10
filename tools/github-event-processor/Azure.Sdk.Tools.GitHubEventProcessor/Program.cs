@@ -36,8 +36,6 @@ namespace Azure.Sdk.Tools.GitHubEventProcessor
             string rawJson = File.ReadAllText(args[1]);
             GitHubEventClient gitHubEventClient = new GitHubEventClient(OrgConstants.ProductHeaderName);
             await gitHubEventClient.WriteRateLimits("RateLimit at start of execution:");
-            // JRS - Remove this is just a test, the repo.Id is for https://github.com/azure-sdk/github-event-processor-test
-            await gitHubEventClient.DoesUserHavePermission(507980610, "JimSuplizio", "none");
             switch (eventName)
             {
                 case EventConstants.issues:
