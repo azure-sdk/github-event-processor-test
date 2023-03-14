@@ -64,7 +64,7 @@ jobs:
       - name: Build and install GitHubEventProcessor from sources
         run: |
           dotnet pack .
-          dotnet tool install --global --prerelease --add-source ../../artifacts/packages/Debug Azure.Sdk.Tools.GitHubEventProcessor
+          dotnet tool install --global --prerelease --add-source ../../../artifacts/packages/Debug Azure.Sdk.Tools.GitHubEventProcessor
         shell: bash
         working-directory: azure-sdk-tools/tools/github-event-processor/Azure.Sdk.Tools.GitHubEventProcessor
 
