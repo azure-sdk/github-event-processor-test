@@ -36,7 +36,7 @@ jobs:
         run: >
           dotnet tool install
           Azure.Sdk.Tools.GitHubEventProcessor
-          --version 1.0.0-dev.20230310.4
+          --version 1.0.0-dev.20230313.4
           --add-source https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-net/nuget/v3/index.json
           --global
         shell: bash
@@ -44,8 +44,8 @@ jobs:
 
       # Testing checkout of sources from the Azure/azure-sdk-tools repository
       # The ref: is the SHA from the pull request in that repository or the
-      # refs/pull/5607/merge for the latest on any given PR. If the repository
-      # is a fork eg. User/azure-sdk-tools then the repository down below will
+      # refs/pull/<PRNumber>/merge for the latest on any given PR. If the repository
+      # is a fork eg. <User>/azure-sdk-tools then the repository down below will
       # need to point to that fork
       # Start-Build
       # - name: Checkout tools repo for GitHub Event Processor sources
@@ -53,11 +53,11 @@ jobs:
       #   with:
       #     repository: Azure/azure-sdk-tools
       #     path: azure-sdk-tools
-      #     ref: refs/pull/5607/merge
+      #     ref: <refs/pull/<PRNumber>/merge> or <sha>
 
       # - name: Build and install GitHubEventProcessor from sources
       #   run: |
-      #     dotnet pack .
+      #     dotnet pack
       #     dotnet tool install --global --prerelease --add-source ../../../artifacts/packages/Debug Azure.Sdk.Tools.GitHubEventProcessor
       #   shell: bash
       #   working-directory: azure-sdk-tools/tools/github-event-processor/Azure.Sdk.Tools.GitHubEventProcessor
