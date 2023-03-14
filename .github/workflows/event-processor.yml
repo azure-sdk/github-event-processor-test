@@ -53,20 +53,20 @@ jobs:
 
       # Testing checkout of sources from the Azure/azure-sdk-tools repository
       # The ref: is the SHA from the pull request in that repository
+      # ref: refs/pull/5607/merge for the latest on any given PR
       - name: Checkout tools repo for GitHub Event Processor sources
         uses: actions/checkout@v3
         with:
           repository: Azure/azure-sdk-tools
-          path: action-sources
+          path: azure-sdk-tools
           ref: 4c5dc05e0e7740eb026804264670dcf7d4c9c17e
 
       - name: Build and install GitHubEventProcessor from sources
         run: |
-          dotnet build
           dotnet pack .
           dotnet tool install --global --prerelease --add-source ../../artifacts/packages/Debug Azure.Sdk.Tools.GitHubEventProcessor
         shell: bash
-        working-directory: action-sources/tools/github-event-processor/Azure.Sdk.Tools.GitHubEventProcessor
+        working-directory: azure-sdk-tools/tools/github-event-processor/Azure.Sdk.Tools.GitHubEventProcessor
 
       # To run github-event-processor built from source, for testing purposes, uncomment everything
       # in between the Start/End-Build From Source comments and comment everything in between the
