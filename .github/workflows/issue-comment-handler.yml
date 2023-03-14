@@ -1,0 +1,16 @@
+name: Issue Comment Event Handler
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  event-handler:
+    name: Handle ${{ github.event_name }} ${{ github.event.action }} event
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Echo event payload
+        run: |
+          echo $GITHUB_PAYLOAD
+        shell: bash
+        env:
+          GITHUB_PAYLOAD: ${{ toJson(github.event) }}
