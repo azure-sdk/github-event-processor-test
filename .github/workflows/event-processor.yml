@@ -59,6 +59,8 @@ jobs:
           repository: Azure/azure-sdk-tools
           path: action-sources
           ref: 4c5dc05e0e7740eb026804264670dcf7d4c9c17e
+
+      - name: Build and install GitHubEventProcessor from sources
         run: |
           dotnet build
           dotnet pack .
