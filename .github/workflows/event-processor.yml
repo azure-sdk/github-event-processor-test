@@ -51,18 +51,33 @@ jobs:
           echo "::add-mask::$LABEL_SERVICE_API_KEY"
           echo "LABEL_SERVICE_API_KEY=$LABEL_SERVICE_API_KEY" >> $GITHUB_ENV
 
+      # Testing checkout of sources from the Azure/azure-sdk-tools repository
+      # The ref: is the SHA from the pull request in that repository
+      - name: Checkout tools repo for GitHub Event Processor sources
+        uses: actions/checkout@v3
+        with:
+          repository: Azure/azure-sdk-tools
+          path: action-sources
+          ref: 4c5dc05e0e7740eb026804264670dcf7d4c9c17e
+        run: |
+          dotnet build
+          dotnet pack .
+          dotnet tool install --global --prerelease --add-source ../../artifacts/packages/Debug Azure.Sdk.Tools.GitHubEventProcessor
+        shell: bash
+        working-directory: action-sources/tools/github-event-processor/Azure.Sdk.Tools.GitHubEventProcessor
+
       # To run github-event-processor built from source, for testing purposes, uncomment everything
       # in between the Start/End-Build From Source comments and comment everything in between the
       # Start/End-Install comments
       # Start-Install
-      - name: Install GitHub Event Processor
-        run: >
-          dotnet tool install
-          Azure.Sdk.Tools.GitHubEventProcessor
-          --version 1.0.0-dev.20230310.4
-          --add-source https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-net/nuget/v3/index.json
-          --global
-        shell: bash
+      # - name: Install GitHub Event Processor
+      #   run: >
+      #     dotnet tool install
+      #     Azure.Sdk.Tools.GitHubEventProcessor
+      #     --version 1.0.0-dev.20230310.4
+      #     --add-source https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-net/nuget/v3/index.json
+      #     --global
+      #   shell: bash
 
       - name: Process Action Event
         run: |
