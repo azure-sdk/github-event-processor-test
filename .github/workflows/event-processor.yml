@@ -29,6 +29,9 @@ jobs:
     name: Handle ${{ github.event_name }} ${{ github.event.action }} event
     runs-on: ubuntu-latest
     steps:
+      - name: 'checking something'
+        run: ls
+
       - name: 'Sparse Checkout'
         run: |
           set -ex
