@@ -29,11 +29,6 @@ jobs:
     name: Handle ${{ github.event_name }} ${{ github.event.action }} event
     runs-on: ubuntu-latest
     steps:
-      - name: 'checking something'
-        shell: pwsh
-        run: |
-          Get-ChildItem -Recurse
-
       - name: 'Sparse Checkout'
         run: |
           set -ex
@@ -41,12 +36,6 @@ jobs:
           git sparse-checkout init
           git sparse-checkout set '.github'
           git checkout main
-
-      - name: 'checking something after checkout'
-        shell: pwsh
-        run: |
-          Get-ChildItem -Recurse
-
 
       - name: 'Az CLI login'
         if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
