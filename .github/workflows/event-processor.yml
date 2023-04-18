@@ -30,7 +30,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'checking something'
-        run: ls
+        run: |
+          pwd
+          ls
 
       - name: 'Sparse Checkout'
         run: |
