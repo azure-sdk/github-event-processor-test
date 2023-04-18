@@ -32,7 +32,7 @@ jobs:
       - name: 'checking something'
         run: |
           pwd
-          ls
+          ls -R
 
       - name: 'Sparse Checkout'
         run: |
