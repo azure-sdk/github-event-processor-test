@@ -30,9 +30,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'checking something'
+        shell: pwsh
         run: |
-          pwd
-          ls -R
+          Get-ChildItem -Recurse
 
       - name: 'Sparse Checkout'
         run: |
@@ -41,12 +41,6 @@ jobs:
           git sparse-checkout init
           git sparse-checkout set '.github'
           git checkout main
-
-      - name: 'checking something after sparse'
-        run: |
-          pwd
-          ls -R
-
 
       - name: 'Az CLI login'
         if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
