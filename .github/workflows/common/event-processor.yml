@@ -30,37 +30,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Sparse Checkout'
-        shell: pwsh
         run: |
-          $PSNativeCommandUseErrorActionPreference = $True
-          $ErrorActionPreference = 'Stop'
-          $attempts = 0
-          while ($attempts -lt 3) {
-              try {
-                  Write-Host "git clone --no-checkout --filter=tree:0 https://github.com/${{ github.repository }} ."
-                  git clone --no-checkout --filter=tree:0 https://github.com/${{ github.repository }} .
-                  git sparse-checkout init
-                  git sparse-checkout set '.github'
-                  break
-              } catch {
-                  Write-Host "Retrying clone $attempts"
-                  $attempts++
-              }
-          }
-          if ($attempts -eq 3) {
-              exit 1
-          }
-          $attempts = 0
-          while ($attempts -lt 3) {
-              try {
-                  Write-Host "git checkout main"
-                  git checkout main
-                  break
-              } catch {
-                  Write-Host "Retrying checkout $attempts"
-                  $attempts++
-              }
-          }
+          set -ex
+          git clone --no-checkout --filter=tree:0 https://github.com/${{ github.repository }} .
+          git sparse-checkout init
+          git sparse-checkout set '.github'
+          git checkout main
 
       - name: 'Az CLI login'
         if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
