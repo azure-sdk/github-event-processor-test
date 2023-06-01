@@ -84,8 +84,9 @@ jobs:
 
       - name: Process Action Event
         run: |
-          echo ${{ toJson(github.event) }} > payload.json
           cat > payload.json << 'EOF'
+          ${{ toJson(github.event) }}
+          EOF
           github-event-processor ${{ github.event_name }} payload.json
         shell: bash
         env:
