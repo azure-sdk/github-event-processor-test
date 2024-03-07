@@ -43,7 +43,7 @@ jobs:
             --query value)
 
           echo "::add-mask::$LABEL_SERVICE_API_KEY"
-          echo "LABEL_SERVICE_API_KEY=$LABEL_SERVICE_API_KEY" >> $GITHUB_ENV
+          echo "LABEL_SERVICE_API_KEY=$LABEL_SERVICE_API_KEY" >> "$GITHUB_OUTPUT"
 
   event-handler:
     permissions:
