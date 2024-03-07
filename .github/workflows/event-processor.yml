@@ -25,7 +25,7 @@ jobs:
     name: Retrieve Label Service Key from Azure
     runs-on: ubuntu-latest
     outputs:
-      key-output: ${{ steps.label-service.outputs.LABEL_SERVICE_API_KEY }}
+      key-output: ${{ steps.get-label-service-key.outputs.LABEL_SERVICE_API_KEY }}
     if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
     steps:
       - id: az-cli-login
