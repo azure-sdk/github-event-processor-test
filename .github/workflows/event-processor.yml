@@ -17,26 +17,19 @@ on:
 permissions: {}
 
 jobs:
-  event-handler:
-    permissions:
-      issues: write
-      pull-requests: write
-      # For OIDC auth
-      id-token: write
-      contents: read
-    name: Handle ${{ github.event_name }} ${{ github.event.action }} event
+  azure-actions:
+    name: Retrieve Label Service Key from Azure
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
     steps:
       - name: 'Az CLI login'
-        if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
-        uses: azure/login@v1.5.1
+        uses: azure/login@v1
         with:
             client-id: ${{ secrets.AZURE_CLIENT_ID }}
             tenant-id: ${{ secrets.AZURE_TENANT_ID }}
             subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: 'Run Azure CLI commands'
-        if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
         run: |
           LABEL_SERVICE_API_KEY=$(az keyvault secret show \
             --vault-name issue-labeler \
@@ -47,6 +40,18 @@ jobs:
           echo "::add-mask::$LABEL_SERVICE_API_KEY"
           echo "LABEL_SERVICE_API_KEY=$LABEL_SERVICE_API_KEY" >> $GITHUB_ENV
 
+  event-handler:
+    permissions:
+      issues: write
+      pull-requests: write
+      # For OIDC auth
+      id-token: write
+      contents: read
+    needs: azure-actions
+    name: Handle ${{ github.event_name }} ${{ github.event.action }} event
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
       # To run github-event-processor built from source, for testing purposes, uncomment everything
       # in between the Start/End-Build From Source comments and comment everything in between the
       # Start/End-Install comments
