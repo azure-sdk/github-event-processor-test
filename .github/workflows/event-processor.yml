@@ -17,16 +17,18 @@ on:
 permissions: {}
 
 jobs:
-  issues-opened:
+  # This event requires the Azure CLI to get the LABEL_SERVICE_API_KEY from the vault.
+  # Because the azure/login step adds time costly pre/post Az CLI commands to any every job
+  # it's used in, split this into its own job so only the event that needs the Az CLI pays
+  # the cost.
+  event-handler-with-azure:
     permissions:
       issues: write
       pull-requests: write
       # For OIDC auth
       id-token: write
       contents: read
-    # This event requires Azure to get the LABEL_SERVICE_API_KEY. Because of the pre/post Az CLI
-    # commands getting added to any job with the azure/login step
-    name: Handle Action Event with Azure
+    name: Handle ${{ github.event_name }} ${{ github.event.action }} event
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
     steps:
@@ -100,7 +102,7 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-    name: Handle Action Event
+    name: Handle ${{ github.event_name }} ${{ github.event.action }} event
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'issues' || github.event.action != 'opened' }}
     steps:
