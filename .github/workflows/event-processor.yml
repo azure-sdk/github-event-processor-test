@@ -24,7 +24,9 @@ jobs:
       # For OIDC auth
       id-token: write
       contents: read
-    name: Handle ${{ github.event_name }} ${{ github.event.action }} event
+    # This event requires Azure to get the LABEL_SERVICE_API_KEY. Because of the pre/post Az CLI
+    # commands getting added to any job with the azure/login step
+    name: Handle Action Event with Azure
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
     steps:
@@ -98,10 +100,7 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-      # For OIDC auth
-      id-token: write
-      contents: read
-    name: Handle ${{ github.event_name }} ${{ github.event.action }} event
+    name: Handle Action Event
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'issues' || github.event.action != 'opened' }}
     steps:
